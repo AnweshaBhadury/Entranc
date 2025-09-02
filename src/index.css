@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #fff;
+  color: #24341D;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+.slanted-divider::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background-color: #f3f4f6;
+  transform-origin: bottom left;
+  transform: skewY(-2deg);
+}
+
+/* ===== Crash-in from LEFT ===== */
+@keyframes crash-in-left {
+  0%   { transform: translateX(-120%) scale(0.9); opacity: 0; }
+  60%  { transform: translateX(10%)   scale(1.05); opacity: 1; }  /* rush in */
+  75%  { transform: translateX(-6%)   scale(0.98); }              /* first bounce */
+  88%  { transform: translateX(3%)    scale(1.01); }              /* rebound */
+  100% { transform: translateX(0)     scale(1); }                 /* settle */
+}
+
+/* ===== Crash-in from RIGHT ===== */
+@keyframes crash-in-right {
+  0%   { transform: translateX(120%) scale(0.9); opacity: 0; }
+  60%  { transform: translateX(-10%) scale(1.05); opacity: 1; }
+  75%  { transform: translateX(6%)   scale(0.98); }
+  88%  { transform: translateX(-3%)  scale(1.01); }
+  100% { transform: translateX(0)    scale(1); }
+}
+
+/* Utility classes */
+.animate-crash-left  { animation: crash-in-left 900ms cubic-bezier(.2,.8,.2,1) both; }
+.animate-crash-right { animation: crash-in-right 900ms cubic-bezier(.2,.8,.2,1) both; }
