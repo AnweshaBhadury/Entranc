@@ -9,7 +9,7 @@ export default defineType({
     defineField({
       name: "ImpactSection",
       title: "Impact Section",
-      type: "ImpactSection", // the hero section component
+      type: "ImpactSection", 
     }),
     defineField({
       name: "JoinJourney",

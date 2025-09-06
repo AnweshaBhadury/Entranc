@@ -1,4 +1,3 @@
-// ./PilotPageSchema/ImpactSection.ts
 import { defineType, defineField } from "sanity";
 
 export default defineType({
@@ -9,13 +8,13 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string", // plugin makes it multilingual
+      type: "string",
       description: "Main heading for the impact section",
     }),
     defineField({
       name: "subHeading",
       title: "Subheading / Intro Text",
-      type: "string", // multilingual automatically
+      type: "string",
       description: "Small text above the heading",
     }),
     defineField({
@@ -43,25 +42,25 @@ export default defineType({
             defineField({
               name: "titleLine1",
               title: "Title Line 1",
-              type: "string", // multilingual
+              type: "string",
               hidden: ({ parent }) => parent?.type !== "title",
             }),
             defineField({
               name: "titleLine2",
               title: "Title Line 2",
-              type: "string", // multilingual
+              type: "string",
               hidden: ({ parent }) => parent?.type !== "title",
             }),
             defineField({
               name: "value",
               title: "Stat Value",
-              type: "string", // numbers usually don't need localization
+              type: "string",
               hidden: ({ parent }) => parent?.type !== "stat",
             }),
             defineField({
               name: "label",
               title: "Stat Label",
-              type: "string", // multilingual
+              type: "string",
               hidden: ({ parent }) => parent?.type !== "stat",
             }),
           ],
