@@ -1,0 +1,35 @@
+// ./schemas/PilotPageSchema/pilot.ts
+import { defineType, defineField } from "sanity";
+
+export default defineType({
+  name: "pilot",
+  title: "Pilot Page",
+  type: "document",
+  fields: [
+    defineField({
+      name: "ImpactSection",
+      title: "Impact Section",
+      type: "ImpactSection", // the hero section component
+    }),
+    defineField({
+      name: "JoinJourney",
+      title: "Join Our Journey Section",
+      type: "JoinJourney",
+    }),
+    defineField({
+      name: "PilotHero",
+      title: "Pilot Hero Section",
+      type: "PilotHero", // can use localeString fields inside for multilingual support
+    }),
+    defineField({
+      name: "ProjectCard",
+      title: "Project Card Section",
+      type: "ProjectCard", // can use localeString fields inside for multilingual support
+    }),
+    defineField({
+      name: "ProjectsSection",
+      title: "Projects Section",
+      type: "ProjectsSection", // can use localeString fields inside for multilingual support
+    }),
+  ],
+});

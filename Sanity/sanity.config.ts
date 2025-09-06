@@ -7,9 +7,8 @@ import { schemaTypes } from "./schemaTypes";
 export default defineConfig({
   name: "default",
   title: "EntranC",
-
-  projectId: "kn8ctvrb",   // your client’s project
-  dataset: "production",   // dataset
+  projectId: "kn8ctvrb",
+  dataset: "production",
 
   plugins: [
     structureTool(),
@@ -19,8 +18,8 @@ export default defineConfig({
         { id: "en", title: "English" },
         { id: "de", title: "Deutsch" },
       ],
-      defaultLanguages: ["en"],
-      fieldTypes: ["string", "text"], 
+      defaultLanguages: ["en"], // ✅ keep plural
+      fieldTypes: ["string", "text"], // auto converts these fields to multilingual arrays
     }),
   ],
 
