@@ -1,7 +1,41 @@
-import React from 'react';
-import ScrollReveal from '../utils/ScrollReveal';
+import React, { useEffect, useRef } from "react";
+import ScrollReveal from "../utils/ScrollReveal";
+import { useRive } from "@rive-app/react-canvas";
 
 const ConsortiumSection = () => {
+    const { rive, RiveComponent } = useRive({
+        src: "/animations/entranc.riv",
+        autoplay: false, // 1. Disable autoplay
+    });
+
+    // 2. Create a ref to attach to the animation's container
+    const riveContainerRef = useRef(null);
+
+    useEffect(() => {
+        // 3. Set up an observer to watch for when the animation is visible
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // When the component is on screen (is intersecting)
+                if (entry.isIntersecting) {
+                    rive && rive.play(); // Play the animation
+                    observer.unobserve(entry.target); // Optional: Stop observing after it has played once
+                }
+            },
+            {
+                threshold: 0.5, // Trigger when 50% of the element is visible
+            }
+        );
+
+        if (riveContainerRef.current) {
+            observer.observe(riveContainerRef.current);
+        }
+        return () => {
+            if (riveContainerRef.current) {
+                observer.unobserve(riveContainerRef.current);
+            }
+        };
+    }, [rive]);
+
     return (
         <section className="py-20">
             <div className="container mx-auto px-phone md:px-tab lg:px-desktop">
@@ -12,7 +46,9 @@ const ConsortiumSection = () => {
                                 <h2 className="text-h2-phone md:text-h2-tab lg:text-h2-desktop font-bold leading-tight text-primary">
                                     Consortium
                                 </h2>
-                                <p className="text-dark-gray">Powered by a diverse consortium of innovators, cooperatives, and institutions — working together for a shared energy future.</p>
+                                <p className="text-dark-gray">
+                                    Powered by a diverse consortium of innovators, cooperatives, and institutions — working together for a shared energy future.
+                                </p>
                                 <div className="inline-flex items-center group select-none relative">
                                     <span
                                         className="
@@ -58,18 +94,21 @@ const ConsortiumSection = () => {
                                 </div>
                             </div>
                         </ScrollReveal>
-                        <ScrollReveal delay={0.2}>
-                            <img
-                                src="https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"
-                                alt="Consortium logos"
-                                className="w-full h-auto"
-                            />
+                        <ScrollReveal delay={0}>
+                            <div
+                            ref = {riveContainerRef}
+                            className=" bg-primary-dark rounded-[2rem] lg:rounded-tr-[0rem] lg:rounded-br-[0rem] flex-1 m-[10px] lg:m-0 h-[100%] aspect-[1/1] lg:aspect-auto w-auto">
+                                <RiveComponent
+                                    className="rive-wrapper min-h-[400px] !h-full w-full flex items-center justify-center"
+                                    aria-label="Sample Rive Animation"
+                                />
+                            </div>
                         </ScrollReveal>
                     </div>
                 </div>
             </div>
         </section>
     );
-}
+};
 
 export default ConsortiumSection;
