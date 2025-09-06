@@ -1,7 +1,13 @@
-import React from 'react';
-import ScrollReveal from '../utils/ScrollReveal';
+import React from "react";
+import ScrollReveal from "../utils/ScrollReveal";
+import useRive from "@rive-app/react-canvas";
 
 const ConsortiumSection = () => {
+    const { rive, RiveComponent } = useRive({
+        src: "/animations/digicoop.riv",
+        autoplay: true,
+    });
+
     return (
         <section className="py-20">
             <div className="container mx-auto px-phone md:px-tab lg:px-desktop">
@@ -12,7 +18,9 @@ const ConsortiumSection = () => {
                                 <h2 className="text-h2-phone md:text-h2-tab lg:text-h2-desktop font-bold leading-tight text-primary">
                                     Consortium
                                 </h2>
-                                <p className="text-dark-gray">Powered by a diverse consortium of innovators, cooperatives, and institutions — working together for a shared energy future.</p>
+                                <p className="text-dark-gray">
+                                    Powered by a diverse consortium of innovators, cooperatives, and institutions — working together for a shared energy future.
+                                </p>
                                 <div className="inline-flex items-center group select-none relative">
                                     <span
                                         className="
@@ -59,17 +67,23 @@ const ConsortiumSection = () => {
                             </div>
                         </ScrollReveal>
                         <ScrollReveal delay={0.2}>
-                            <img
+                            <div className=" bg-primary-dark rounded-[2rem] lg:rounded-tr-[0rem] lg:rounded-br-[0rem] flex-1 m-[10px] lg:m-0 h-[100%] aspect-[1/1] lg:aspect-auto w-auto">
+                                <RiveComponent
+                                    className="rive-wrapper min-h-[400px] !h-full w-full flex items-center justify-center"
+                                    aria-label="Sample Rive Animation"
+                                />
+                                {/* <img
                                 src="https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"
                                 alt="Consortium logos"
                                 className="w-full h-auto"
-                            />
+                            /> */}
+                            </div>
                         </ScrollReveal>
                     </div>
                 </div>
             </div>
         </section>
     );
-}
+};
 
 export default ConsortiumSection;

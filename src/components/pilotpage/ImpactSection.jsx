@@ -1,6 +1,6 @@
 import React from 'react';
 import ScrollReveal from '../utils/ScrollReveal';
-import StatCounter from '../StatCounter';
+// import StatCounter from '../StatCounter';
 
 const statsData = [
     {
@@ -53,11 +53,12 @@ const ImpactSection = () => {
                                 );
                             }
                             return (
-                                <StatCounter
-                                    key={index}
-                                    value={item.value}
-                                    label={item.label}
-                                />
+                                // <StatCounter
+                                //     key={index}
+                                //     value={item.value}
+                                //     label={item.label}
+                                // />
+                                <div></div>
                             );
                         })}
                     </div>
