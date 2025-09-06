@@ -40,7 +40,7 @@ const ImpactSection = () => {
                         <h2 className="text-h2-phone md:text-h2-tab font-bold text-primary">The How Behind Us</h2>
                     </div>
                 </ScrollReveal>
-                
+
                 <ScrollReveal delay={0.2}>
                     <div className="mt-12 grid grid-cols-1 md:grid-cols-5 shadow-lg rounded-xl overflow-hidden">
                         {statsData.map((item, index) => {
@@ -53,10 +53,10 @@ const ImpactSection = () => {
                                 );
                             }
                             return (
-                                <StatCounter 
-                                    key={index} 
-                                    value={item.value} 
-                                    label={item.label} 
+                                <StatCounter
+                                    key={index}
+                                    value={item.value}
+                                    label={item.label}
                                 />
                             );
                         })}
