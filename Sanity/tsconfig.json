@@ -3,14 +3,20 @@
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true,          // skip type checking of dependencies (fixes most @sanity/types conflicts)
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "Preserve",
+    "module": "ESNext",            
+    "moduleResolution": "Node",    // ensures imports are resolved correctly
     "moduleDetection": "force",
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",                 // resolves imports from root
+    "paths": {                      // optional, useful if you have multiple node_modules folders
+      "sanity": ["./node_modules/sanity"],
+      "@sanity/*": ["./node_modules/@sanity/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

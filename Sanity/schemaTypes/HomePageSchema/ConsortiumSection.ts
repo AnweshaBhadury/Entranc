@@ -1,4 +1,4 @@
-import { defineType, defineField } from "sanity"
+import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "ConsortiumSection",
@@ -38,4 +38,4 @@ export default defineType({
       description: "Illustration or logos of the consortium",
     }),
   ],
-})
+});

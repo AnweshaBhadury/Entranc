@@ -1,9 +1,9 @@
-import { defineType, defineField } from "sanity"
+import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "StatsSection",
   title: "Stats Section",
-  type: "object", // embed in Home page
+  type: "object",
   fields: [
     defineField({
       name: "heading",
@@ -15,7 +15,8 @@ export default defineType({
       name: "description",
       title: "Description",
       type: "text",
-      initialValue: "In just a few years, we’re building more than infrastructure — we’re building trust, community, and measurable climate action...",
+      initialValue:
+        "In just a few years, we’re building more than infrastructure — we’re building trust, community, and measurable climate action...",
     }),
     defineField({
       name: "buttonText",
@@ -41,18 +42,18 @@ export default defineType({
       title: "Stats Cards",
       type: "array",
       of: [
-        defineField({
-      name: "statCard",
-      title: "Stat Card",
-      type: "object",
-      fields: [
-        defineField({ name: "tag", title: "Tag", type: "string" }),
-        defineField({ name: "tagColor", title: "Tag Color (CSS classes)", type: "string" }),
-        defineField({ name: "iconUrl", title: "Icon Image URL", type: "url" }),
-        defineField({ name: "content", title: "Content", type: "text" }),
-      ],
-        }),
+        {
+          type: "object",
+          name: "statCard",
+          title: "Stat Card",
+          fields: [
+            defineField({ name: "tag", title: "Tag", type: "string" }),
+            defineField({ name: "tagColor", title: "Tag Color (CSS classes)", type: "string" }),
+            defineField({ name: "iconUrl", title: "Icon Image URL", type: "url" }),
+            defineField({ name: "content", title: "Content", type: "text" }),
+          ],
+        },
       ],
     }),
   ],
-})
+});

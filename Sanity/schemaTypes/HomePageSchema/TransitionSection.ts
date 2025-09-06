@@ -1,4 +1,4 @@
-import { defineType, defineField } from "sanity"
+import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "TransitionSection",
@@ -32,6 +32,7 @@ export default defineType({
       name: "ctaLink",
       title: "CTA Button Link",
       type: "url",
+      description: "Optional URL for the CTA button",
     }),
     defineField({
       name: "image",
@@ -46,4 +47,4 @@ export default defineType({
       description: "Optional small text below the image, e.g., 'COMMUNITY ENERGY · EU SUPPORTED'",
     }),
   ],
-})
+});
