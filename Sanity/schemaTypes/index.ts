@@ -1,29 +1,29 @@
-import home from "./home"
-import Hero from "./HomePageSchema/Hero"
-import TransitionSection from "./HomePageSchema/TransitionSection"
-import ConsortiumSection from "./HomePageSchema/ConsortiumSection"
-import StatsSection from "./HomePageSchema/StatsSection"
-import RoadmapSection from "./HomePageSchema/RoadmapSection"
-import ResourceSection from "./HomePageSchema/ResourceSection"
-import MakingEnergySection from "./HomePageSchema/MakingEnergySection"
-import Marquee from "./HomePageSchema/Marquee"
+import home from "./home";
+import Hero from "./HomePageSchema/Hero";
+import TransitionSection from "./HomePageSchema/TransitionSection";
+import ConsortiumSection from "./HomePageSchema/ConsortiumSection";
+import StatsSection from "./HomePageSchema/StatsSection";
+import RoadmapSection from "./HomePageSchema/RoadmapSection";
+import ResourceSection from "./HomePageSchema/ResourceSection";
+import MakingEnergySection from "./HomePageSchema/MakingEnergySection";
+import Marquee from "./HomePageSchema/Marquee";
 
-import about from "./about"
-import AboutHero from "./AboutPageSchema/AboutHero"
-import HowBehindUs from "./AboutPageSchema/HowBehindUs"
-import OurTeam from "./AboutPageSchema/OurTeam"
-import WhoWeAre from "./AboutPageSchema/WhoWeAre"
-import WhyBehindUs from "./AboutPageSchema/WhyBehindUs"
+import about from "./about";
+import AboutHero from "./AboutPageSchema/AboutHero";
+import HowBehindUs from "./AboutPageSchema/HowBehindUs";
+import OurTeam from "./AboutPageSchema/OurTeam";
+import WhoWeAre from "./AboutPageSchema/WhoWeAre";
+import WhyBehindUs from "./AboutPageSchema/WhyBehindUs";
 
-import pilot from "./pilot"
-import ImpactSection from "./PilotPageSchema/ImpactSection"
-import JoinJourney from "./PilotPageSchema/JoinJourney"
-import PilotHero from "./PilotPageSchema/PilotHero"
-import ProjectCard from "./PilotPageSchema/ProjectCard"
-import ProjectsSection from "./PilotPageSchema/ProjectsSection"
-
+import pilot from "./pilot";
+import ImpactSection from "./PilotPageSchema/ImpactSection";
+import JoinJourney from "./PilotPageSchema/JoinJourney";
+import PilotHero from "./PilotPageSchema/PilotHero";
+import ProjectCard from "./PilotPageSchema/ProjectCard";
+import ProjectsSection from "./PilotPageSchema/ProjectsSection";
 
 export const schemaTypes = [
+  // home page
   home,
   Hero,
   TransitionSection,
@@ -34,10 +34,19 @@ export const schemaTypes = [
   MakingEnergySection,
   Marquee,
 
+  // about page
   about,
-  AboutHero,HowBehindUs,OurTeam,WhoWeAre,WhyBehindUs,
+  AboutHero,
+  HowBehindUs,
+  OurTeam,
+  WhoWeAre,
+  WhyBehindUs,
 
+  // pilot page
   pilot,
-  ImpactSection,JoinJourney,PilotHero,ProjectCard,ProjectsSection,
-
-]
+  ImpactSection,
+  JoinJourney,
+  PilotHero,
+  ProjectCard,
+  ProjectsSection,
+];
