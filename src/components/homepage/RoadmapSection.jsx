@@ -114,13 +114,6 @@ const RoadmapSection = () => {
                             key={card.id}
                             className={`absolute w-80 h-[450px]`}
                             initial={{ scale: 0, rotateY: 180, opacity: 0 }}
-                            //whileInView is no longer necessary
-                            // whileInView={{
-                            //     x: `${(index - 1) * 80}%`,
-                            //     scale: index === 1 ? 1 : 0.85,
-                            //     rotateY: index === 1 ? 0 : (index < 1 ? -35 : 35),
-                            //     zIndex: index === 1 ? 3 : 1,
-                            // }}
                             animate={{
                                 scale: index === 1 ? 1 : 0.85,
                                 x: `${(index - 1) * 80}%`,

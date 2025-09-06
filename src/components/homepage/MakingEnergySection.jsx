@@ -117,12 +117,6 @@ const MakingEnergySection = () => {
                             key={card.id}
                             className={`absolute w-72 h-96`}
                             initial={{ scale: 0, rotateY: 180 }}
-                            // whileInView={{
-                            //     x: `${(index - 1) * 70}%`,
-                            //     scale: index === 1 ? 1 : 0.8,
-                            //     rotateY: index === 1 ? 0 : (index < 1 ? -45 : 45),
-                            //     zIndex: index === 1 ? 3 : 1,
-                            // }}
                             animate={{
                                 scale: index === 1 ? 1 : 0.85,
                                 x: `${(index - 1) * 80}%`,
