@@ -1,9 +1,9 @@
-import { defineType, defineField } from "sanity"
+import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "Hero",
   title: "Hero Section",
-  type: "object", // can also be "object" if you embed in home.ts
+  type: "object", // keep as object if embedded
   fields: [
     defineField({
       name: "heading",
@@ -44,4 +44,4 @@ export default defineType({
       options: { hotspot: true },
     }),
   ],
-})
+});
