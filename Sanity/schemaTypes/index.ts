@@ -15,6 +15,13 @@ import OurTeam from "./AboutPageSchema/OurTeam"
 import WhoWeAre from "./AboutPageSchema/WhoWeAre"
 import WhyBehindUs from "./AboutPageSchema/WhyBehindUs"
 
+import pilot from "./pilot"
+import ImpactSection from "./PilotPageSchema/ImpactSection"
+import JoinJourney from "./PilotPageSchema/JoinJourney"
+import PilotHero from "./PilotPageSchema/PilotHero"
+import ProjectCard from "./PilotPageSchema/ProjectCard"
+import ProjectsSection from "./PilotPageSchema/ProjectsSection"
+
 
 export const schemaTypes = [
   home,
@@ -28,6 +35,9 @@ export const schemaTypes = [
   Marquee,
 
   about,
-  AboutHero,HowBehindUs,OurTeam,WhoWeAre,WhyBehindUs
+  AboutHero,HowBehindUs,OurTeam,WhoWeAre,WhyBehindUs,
+
+  pilot,
+  ImpactSection,JoinJourney,PilotHero,ProjectCard,ProjectsSection,
 
 ]
