@@ -8,17 +8,12 @@ export default defineType({
     defineField({
       name: "HeroSection",
       title: "Hero Section",
-      type: "Hero", // must match the schema type name
+      type: "Hero", 
     }),
     defineField({
       name: "TransitionSection",
       title: "Transition Section",
       type: "TransitionSection",
-    }),
-    defineField({
-      name: "CalculatorSection",
-      title: "Calculator Section",
-      type: "CalculatorSection",
     }),
     defineField({
       name: "ConsortiumSection",
@@ -29,6 +24,26 @@ export default defineType({
       name: "StatsSection",
       title: "Stats Section",
       type: "StatsSection",
+    }),
+    defineField({
+      name: "RoadmapSection",
+      title: "Roadmap Section",
+      type: "RoadmapSection",
+    }),
+    defineField({
+      name: "ResourceSection",
+      title: "Resource Section",
+      type: "ResourceSection",
+    }),
+    defineField({
+      name: "MakingEnergySection",
+      title: "Making Energy Section",
+      type: "MakingEnergySection",
+    }),
+    defineField({
+      name: "Marquee",
+      title: "Marquee Section",
+      type: "Marquee",   // ✅ Corrected here
     }),
   ],
 })
