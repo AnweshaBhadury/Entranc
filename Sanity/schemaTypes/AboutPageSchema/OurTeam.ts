@@ -14,12 +14,12 @@ export default defineType({
       description: "Main heading of the section",
     }),
     defineField({
-      name: "teamMembers",
+      name: "members", // <- corrected to match GROQ query
       title: "Team Members",
       type: "array",
       of: [
         {
-          name: "teamMember",
+          name: "member",
           title: "Team Member",
           type: "object",
           fields: [

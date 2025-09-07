@@ -19,8 +19,17 @@ import pilot from "./pilot";
 import ImpactSection from "./PilotPageSchema/ImpactSection";
 import JoinJourney from "./PilotPageSchema/JoinJourney";
 import PilotHero from "./PilotPageSchema/PilotHero";
-import ProjectCard from "./PilotPageSchema/ProjectCard";
 import ProjectsSection from "./PilotPageSchema/ProjectsSection";
+
+
+
+import contact from "./contact";
+import ContactHero from "./ContactPageSchema/ContactHero";
+import ContactFormSection from "./ContactPageSchema/ContactFormSection";
+import FaqSection from "./ContactPageSchema/FaqSection";
+
+import Footer from "./Footer";
+
 
 export const schemaTypes = [
   // home page
@@ -47,6 +56,14 @@ export const schemaTypes = [
   ImpactSection,
   JoinJourney,
   PilotHero,
-  ProjectCard,
   ProjectsSection,
+
+  //Contact Page
+  contact,
+  ContactHero,
+  ContactFormSection,
+  FaqSection,
+
+
+  Footer
 ];

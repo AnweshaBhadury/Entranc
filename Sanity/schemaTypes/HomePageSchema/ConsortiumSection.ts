@@ -3,7 +3,7 @@ import { defineType, defineField } from "sanity";
 export default defineType({
   name: "ConsortiumSection",
   title: "Consortium Section",
-  type: "object", // object so it lives inside home page
+  type: "object", // lives inside Home Page
   fields: [
     defineField({
       name: "heading",
@@ -31,11 +31,11 @@ export default defineType({
       description: "Optional URL for the button",
     }),
     defineField({
-      name: "image",
-      title: "Image",
-      type: "image",
-      options: { hotspot: true },
-      description: "Illustration or logos of the consortium",
+      name: "riveAnimation",
+      title: "Rive Animation File",
+      type: "file",
+      options: { accept: ".riv" },
+      description: "Upload a .riv file for the Consortium section animation",
     }),
   ],
 });

@@ -6,16 +6,18 @@ export default defineType({
   type: "object",
   fields: [
     defineField({
+      name: "introLabel",
+      title: "Intro Label",
+      type: "string",
+      description: "Text above the heading, e.g., 'Our Values & Team'",
+      initialValue: "Our Values & Team",
+    }),
+    defineField({
       name: "heading",
       title: "Heading",
       type: "string",
-      description: "Main heading for the impact section",
-    }),
-    defineField({
-      name: "subHeading",
-      title: "Subheading / Intro Text",
-      type: "string",
-      description: "Small text above the heading",
+      description: "Main heading of the section",
+      initialValue: "The How Behind Us",
     }),
     defineField({
       name: "items",
