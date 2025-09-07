@@ -7,6 +7,16 @@ export default defineType({
   type: "document",
   fields: [
     defineField({
+      name: "PilotHero",
+      title: "Pilot Hero Section",
+      type: "PilotHero", 
+    }),
+    defineField({
+      name: "ProjectsSection",
+      title: "Projects Section",
+      type: "ProjectsSection", 
+    }),
+    defineField({
       name: "ImpactSection",
       title: "Impact Section",
       type: "ImpactSection", 
@@ -15,21 +25,6 @@ export default defineType({
       name: "JoinJourney",
       title: "Join Our Journey Section",
       type: "JoinJourney",
-    }),
-    defineField({
-      name: "PilotHero",
-      title: "Pilot Hero Section",
-      type: "PilotHero", // can use localeString fields inside for multilingual support
-    }),
-    defineField({
-      name: "ProjectCard",
-      title: "Project Card Section",
-      type: "ProjectCard", // can use localeString fields inside for multilingual support
-    }),
-    defineField({
-      name: "ProjectsSection",
-      title: "Projects Section",
-      type: "ProjectsSection", // can use localeString fields inside for multilingual support
     }),
   ],
 });

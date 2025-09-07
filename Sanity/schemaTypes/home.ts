@@ -16,6 +16,11 @@ export default defineType({
       type: "TransitionSection",
     }),
     defineField({
+      name: "ConsortiumSection",
+      title: "Consortium Section",
+      type: "ConsortiumSection",
+    }),
+    defineField({
       name: "StatsSection",
       title: "Stats Section",
       type: "StatsSection",
