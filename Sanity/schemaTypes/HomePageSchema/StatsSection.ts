@@ -37,21 +37,78 @@ export default defineType({
       options: { hotspot: true },
       description: "The image behind the stats section",
     }),
+
+    // === Blog-style cards ===
     defineField({
       name: "cards",
-      title: "Stats Cards",
+      title: "Blog / Stats Cards",
       type: "array",
       of: [
         {
           type: "object",
-          name: "statCard",
-          title: "Stat Card",
+          name: "blogCard",
+          title: "Blog Card",
           fields: [
+            defineField({ name: "title", title: "Title", type: "string" }),
             defineField({ name: "tag", title: "Tag", type: "string" }),
-            defineField({ name: "tagColor", title: "Tag Color (CSS classes)", type: "string" }),
-            defineField({ name: "iconUrl", title: "Icon Image URL", type: "url" }),
-            defineField({ name: "content", title: "Content", type: "text" }),
+            defineField({
+              name: "tagColor",
+              title: "Tag Color",
+              type: "string",
+              options: {
+                list: [
+                  { title: "Sky Blue background with Sky text", value: "bg-s1/20 text-s1" },
+                  { title: "Light Green background with Dark Green text", value: "bg-green-200 text-green-800" },
+                  { title: "Light Orange background with Dark Orange text", value: "bg-orange-200 text-orange-800" },
+                  { title: "Light Blue background with Dark Blue text", value: "bg-blue-200 text-blue-800" },
+                  { title: "Light Purple background with Dark Purple text", value: "bg-purple-200 text-purple-800" },
+                  { title: "Light Red background with Dark Red text", value: "bg-red-200 text-red-800" },
+                  { title: "Light Yellow background with Dark Yellow text", value: "bg-yellow-200 text-yellow-800" },
+                  { title: "Light Teal background with Dark Teal text", value: "bg-teal-200 text-teal-800" },
+                  { title: "Pale Green background with Medium Green text", value: "bg-s2/20 text-m-s2" },
+                ],
+                layout: "dropdown",
+              },
+            }),
+            defineField({
+              name: "iconImage",
+              title: "Icon (Image)",
+              type: "image",
+              options: { hotspot: true },
+            }),
+            defineField({
+              name: "iconUrl",
+              title: "Icon URL (fallback)",
+              type: "url",
+            }),
+            defineField({
+              name: "image",
+              title: "Card Image",
+              type: "image",
+              options: { hotspot: true },
+            }),
+            defineField({ name: "imageAlt", title: "Image alt text", type: "string" }),
+            defineField({ name: "imageCaption", title: "Image caption", type: "string" }),
+
+            defineField({
+              name: "statValue",
+              title: "card text",
+              type: "string",
+            }),
+            defineField({ name: "ctaText", title: "CTA Text", type: "string" }),
+            defineField({ name: "ctaLink", title: "CTA Link", type: "url" }),
           ],
+
+          preview: {
+            select: { title: "title", tag: "tag", image: "image", position: "imagePosition" },
+            prepare({ title, tag, image, position }) {
+              return {
+                title: title || tag || "Untitled card",
+                subtitle: position ? `Layout: ${position}` : "Layout: —",
+                media: image,
+              };
+            },
+          },
         },
       ],
     }),
