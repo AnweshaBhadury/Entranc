@@ -28,7 +28,14 @@ import ContactHero from "./ContactPageSchema/ContactHero";
 import ContactFormSection from "./ContactPageSchema/ContactFormSection";
 import FaqSection from "./ContactPageSchema/FaqSection";
 
+
+import blockContent, { imageWithAlt, codeBlock, oembed,videoBlock, callout, pullquote,gallery,cta } from "./BlogPageSchema/blockContent";
+import blog from "./blog";
+import author from "./BlogPageSchema/author";
+
+
 import Footer from "./Footer";
+import contactSubmit from "./contactSubmit";
 
 
 export const schemaTypes = [
@@ -64,6 +71,14 @@ export const schemaTypes = [
   ContactFormSection,
   FaqSection,
 
+  //blog page
+  imageWithAlt, codeBlock, oembed,videoBlock, callout, pullquote,gallery,cta,author,
+  blockContent,
+  blog,
 
+  //contact submit
+  contactSubmit,
+
+  //footer
   Footer
 ];

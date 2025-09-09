@@ -1,347 +1,263 @@
-// src/components/StatsSection.jsx
+// src/components/Stats/StatsSection.jsx
 import React, { useLayoutEffect, useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FaArrowRight } from "react-icons/fa";
 import { VscVmActive } from "react-icons/vsc";
 import statsImg from "../../assets/home2.jpeg";
 import { client, urlFor } from "../../lib/sanityClient";
-import { PortableText } from "@portabletext/react";
+import useLanguage from "../../hook/useLanguage";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// local fallback (keeps UI working while Sanity data isn't present)
-const fallbackCards = [
-    {
-        tag: "Duration",
-        tagColor: "bg-s1/20 text-s1",
-        icon: <VscVmActive size={20} />,
-        statValue: "4 Years",
-        subText: "2024-2027",
-        image: null,
-        body: null,
-    },
-    {
-        tag: "CO2 Emission Reduction",
-        tagColor: "bg-s2/20 text-m-s2",
-        icon: null,
-        statValue: null,
-        subText: "Measureable climate action.",
-        image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
-        body: null,
-    },
-    {
-        tag: "Community Growth",
-        tagColor: "bg-green-200 text-green-800",
-        icon: null,
-        statValue: null,
-        subText: "Building trust and local ownership.",
-        image: "",
-        body: null,
-    },
-    {
-        tag: "Financial Viability",
-        tagColor: "bg-orange-200 text-orange-800",
-        icon: null,
-        statValue: null,
-        subText: "Shared ambition and sustainable returns.",
-        image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
-        body: null,
-    },
-];
-
-// Adjust GROQ if your StatsSection is nested differently
 const GROQ_STATS = `*[_type == "home"][0].StatsSection{
-  heading,
-  description,
-  buttonText,
-  buttonLink,
-  backgroundImage,
-  cards[] {
-    title,
-    tag,
-    tagColor,
-    iconImage,
-    iconUrl,
-    image,
-    imageAlt,
-    imageCaption,
-    statValue,
-    ctaText,
-    ctaLink
-  }
+  heading, description, buttonText, buttonLink, backgroundImage,
+  cards[] { _key, title, tag, tagColor, iconImage, iconUrl, image, imageAlt, imageCaption, statValue, subText, ctaText, ctaLink }
 }`;
 
-/**
- * Safely build a Sanity image URL for multiple possible shapes we may receive.
- * - accepts string URLs, Sanity image objects (with asset._ref), or minimal refs.
- * - returns null on failure.
- */
-function getSanityImageUrl(img, { width = 800, height = undefined, autoFormat = true } = {}) {
-    if (!img) return null;
-
-    try {
-        // string URL already
-        if (typeof img === "string") {
-            // small guard: empty string => null
-            return img.trim() === "" ? null : img;
-        }
-
-        // shape: { asset: { _ref: 'image-...' } } or asset._id
-        if (img.asset && (img.asset._ref || img.asset._id)) {
-            let builder = urlFor(img).width(width);
-            if (height) builder = builder.height(height);
-            if (autoFormat) builder = builder.auto("format");
-            const finalUrl = builder.url();
-            // debug - remove in production
-            // eslint-disable-next-line no-console
-            console.log("[getSanityImageUrl] built from asset:", finalUrl, img);
-            return finalUrl;
-        }
-
-        // sometimes image is a plain ref object: { _ref: 'image-...' } or { _id: '...' }
-        if (img._ref || img._id) {
-            const fake = { asset: { _ref: img._ref || img._id } };
-            let builder = urlFor(fake).width(width);
-            if (height) builder = builder.height(height);
-            if (autoFormat) builder = builder.auto("format");
-            const finalUrl = builder.url();
-            // eslint-disable-next-line no-console
-            console.log("[getSanityImageUrl] built from _ref/_id:", finalUrl, img);
-            return finalUrl;
-        }
-
-        // fallback: try passing object directly to urlFor (urlFor handles many shapes)
-        const fallback = urlFor(img).width(width).auto("format").url();
-        // eslint-disable-next-line no-console
-        console.log("[getSanityImageUrl] built with fallback:", fallback, img);
-        return fallback;
-    } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn("[getSanityImageUrl] failed for", img, err);
-        return null;
-    }
+function getSanityImageUrl(img, { width = 800, height, autoFormat = true } = {}) {
+  if (!img) return null;
+  try {
+    // If string url passed directly, return as-is (trimmed)
+    if (typeof img === "string") return img.trim() === "" ? null : img;
+    let builder = urlFor(img).width(width);
+    if (height) builder = builder.height(height);
+    if (autoFormat) builder = builder.auto("format");
+    return builder.url();
+  } catch {
+    return null;
+  }
 }
 
-// PortableText custom renderers
-const PortableImage = ({ value }) => {
-    const src = getSanityImageUrl(value, { width: 800 });
-    if (!src) return null;
-    return (
-        <figure style={{ textAlign: "center" }}>
-            <img src={src} alt={value.alt || value.caption || ""} style={{ maxWidth: "100%", height: "auto", borderRadius: 8 }} />
-            {value.caption && <figcaption>{value.caption}</figcaption>}
-        </figure>
-    );
+const fadeSlide = {
+  hidden: { opacity: 0, x: 30 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.55, ease: "easeOut" } },
 };
 
-const portableComponents = {
-    types: {
-        image: PortableImage,
-        // match the object name you used in schema ("codeBlock")
-        codeBlock: ({ value }) => (
-            <pre style={{ background: "#0b1020", color: "#fff", padding: 12, overflowX: "auto", borderRadius: 6 }}>
-                <code>{value?.code}</code>
-            </pre>
-        ),
-    },
+// Localized fallback cards and section copy
+const localizedFallbacks = {
+  en: {
+    heading: "Statistics that Speak For Itself",
+    description: "Building trust, community, and measurable climate action.",
+    buttonText: "Read Blogs",
+    buttonLink: "#",
+    cards: [
+      { id: "f-1", tag: "Duration", tagColor: "bg-s1/20 text-s1", iconFallback: <VscVmActive size={20} />, statValue: "4 Years", subText: "2024–2027" },
+      { id: "f-2", tag: "CO2 Emission Reduction", tagColor: "bg-s2/20 text-m-s2", subText: "Measureable climate action.", image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" },
+      { id: "f-3", tag: "Community Growth", tagColor: "bg-green-200 text-green-800", subText: "Building trust and local ownership.", image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" },
+      { id: "f-4", tag: "Financial Viability", tagColor: "bg-orange-200 text-orange-800", subText: "Shared ambition and sustainable returns.", image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" },
+    ],
+  },
+  du: {
+    heading: "Statistiken, die für sich sprechen",
+    description: "Vertrauen, Gemeinschaft und messbare Klimaschutzmaßnahmen aufbauen.",
+    buttonText: "Blogs lesen",
+    buttonLink: "#",
+    cards: [
+      { id: "f-1", tag: "Dauer", tagColor: "bg-s1/20 text-s1", iconFallback: <VscVmActive size={20} />, statValue: "4 Jahre", subText: "2024–2027" },
+      { id: "f-2", tag: "CO2-Reduktion", tagColor: "bg-s2/20 text-m-s2", subText: "Messbare Klimaschutzmaßnahmen.", image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" },
+      { id: "f-3", tag: "Wachstum der Gemeinschaft", tagColor: "bg-green-200 text-green-800", subText: "Vertrauen und lokale Eigentümerschaft aufbauen.", image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" },
+      { id: "f-4", tag: "Wirtschaftliche Tragfähigkeit", tagColor: "bg-orange-200 text-orange-800", subText: "Geteilte Ambitionen und nachhaltige Renditen.", image: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" },
+    ],
+  },
 };
 
 export default function StatsSection() {
-    const mainRef = useRef(null);
-    const viewportRef = useRef(null);
-    const cardsRef = useRef(null);
+  const mainRef = useRef(null);
+  const viewportRef = useRef(null);
+  const railRef = useRef(null);
 
-    const [section, setSection] = useState(null);
-    const [cards, setCards] = useState(fallbackCards);
-    const [loading, setLoading] = useState(true);
+  const [section, setSection] = useState(null);
+  const [cards, setCards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [language] = useLanguage();
+  const fallback = localizedFallbacks[language] ?? localizedFallbacks.en;
 
-    // fetch Sanity data
-    useEffect(() => {
-        let mounted = true;
-        client
-            .fetch(GROQ_STATS)
-            .then((res) => {
-                if (!mounted) return;
-                if (res) {
-                    setSection(res);
-                    if (Array.isArray(res.cards) && res.cards.length > 0) {
-                        const mapped = res.cards.map((c) => ({
-                            title: c.title || null,
-                            tag: c.tag || null,
-                            tagColor: c.tagColor || "",
-                            iconImage: c.iconImage || null,
-                            iconUrl: c.iconUrl || null,
-                            image: c.image || null,
-                            imageAlt: c.imageAlt || c.title || "",
-                            imageCaption: c.imageCaption || "",
-                            imagePosition: c.imagePosition || "left",
-                            statValue: c.statValue || null,
-                            ctaText: c.ctaText || null,
-                            ctaLink: c.ctaLink || null,
-                            body: c.body || null,
-                        }));
-                        setCards(mapped);
-                    } else {
-                        // keep fallback if no cards returned
-                        setCards(fallbackCards);
-                    }
-                } else {
-                    setCards(fallbackCards);
-                }
-            })
-            .catch((err) => {
-                // eslint-disable-next-line no-console
-                console.error("[StatsSection] Sanity fetch error:", err);
-                setCards(fallbackCards);
-            })
-            .finally(() => {
-                if (mounted) setLoading(false);
-            });
+  // Fetch section data
+  useEffect(() => {
+    let mounted = true;
+    client
+      .fetch(GROQ_STATS)
+      .then((res) => {
+        if (!mounted) return;
+        if (res) {
+          setSection(res);
+          if (Array.isArray(res.cards) && res.cards.length > 0) {
+            // normalize cards from Sanity
+            const normalized = res.cards.map((c, idx) => ({
+              id: c._key ?? `sanity-${idx}`,
+              tag: c.tag ?? c.title ?? fallback.cards[idx % fallback.cards.length]?.tag,
+              tagColor: c.tagColor ?? fallback.cards[idx % fallback.cards.length]?.tagColor,
+              iconImage: c.iconImage ?? null,
+              iconUrl: c.iconUrl ?? null,
+              image: c.image ?? fallback.cards[idx % fallback.cards.length]?.image ?? null,
+              imageAlt: c.imageAlt ?? fallback.cards[idx % fallback.cards.length]?.imageAlt ?? c.title ?? "",
+              imageCaption: c.imageCaption ?? null,
+              statValue: c.statValue ?? fallback.cards[idx % fallback.cards.length]?.statValue ?? null,
+              subText: c.subText ?? fallback.cards[idx % fallback.cards.length]?.subText ?? "",
+              ctaText: c.ctaText ?? null,
+              ctaLink: c.ctaLink ?? null,
+              iconFallback: fallback.cards[idx % fallback.cards.length]?.iconFallback ?? null,
+            }));
+            setCards(normalized);
+          } else {
+            // use localized fallbacks
+            setCards(fallback.cards);
+          }
+        } else {
+          setSection(null);
+          setCards(fallback.cards);
+        }
+      })
+      .catch((err) => {
+        console.warn("StatsSection fetch failed:", err);
+        if (!mounted) return;
+        setError(err);
+        setSection(null);
+        setCards(fallback.cards);
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoading(false);
+      });
 
-        return () => {
-            mounted = false;
-        };
-    }, []);
+    return () => {
+      mounted = false;
+    };
+    // re-run when language changes to reflect localized fallback copy
+  }, [language]);
 
-    // GSAP scroll pin + vertical scroll of cards
-    useLayoutEffect(() => {
-        const hasDom = mainRef.current && viewportRef.current && cardsRef.current;
-        if (!hasDom) return;
+  // GSAP scroll pin + rail animation
+  useLayoutEffect(() => {
+    if (loading || !mainRef.current || !viewportRef.current || !railRef.current) return;
+    const main = mainRef.current;
+    const viewport = viewportRef.current;
+    const rail = railRef.current;
 
-        // wait for children to exist
-        const children = cardsRef.current.children;
-        if (!children || children.length === 0) return;
+    const ctx = gsap.context(() => {
+      const railHeight = rail.scrollHeight;
+      const viewportHeight = viewport.offsetHeight;
+      const scrollDistance = railHeight - viewportHeight;
+      if (scrollDistance <= 0) return;
 
-        const ctx = gsap.context(() => {
-            const cardsEl = cardsRef.current;
-            const viewportEl = viewportRef.current;
+      gsap.set(rail, { y: 0 });
+      gsap.to(rail, {
+        y: -scrollDistance,
+        ease: "none",
+        scrollTrigger: {
+          trigger: main,
+          pin: main,
+          start: "top top",
+          end: `+=${scrollDistance}`,
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+    }, main);
 
-            // kill existing triggers (safety)
-            ScrollTrigger.getAll().forEach((t) => t.kill());
+    return () => ctx.revert();
+  }, [loading, cards]);
 
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: mainRef.current,
-                    pin: mainRef.current,
-                    start: "top top",
-                    end: () => "+=" + (cardsEl.scrollHeight - viewportEl.offsetHeight),
-                    scrub: 1,
-                    invalidateOnRefresh: true,
-                },
-            });
+  const bgUrl = section?.backgroundImage ? getSanityImageUrl(section.backgroundImage, { width: 1600 }) : statsImg;
+  const heading = section?.heading ?? fallback.heading;
+  const description = section?.description ?? fallback.description;
+  const buttonText = section?.buttonText ?? fallback.buttonText;
+  const buttonLink = section?.buttonLink ?? fallback.buttonLink;
 
-            tl.to(cardsEl, {
-                y: () => -(cardsEl.scrollHeight - viewportEl.offsetHeight),
-                ease: "none",
-            });
-        }, mainRef);
+  return (
+    <section className="px-phone md:px-tab w-full lg:px-desktop">
+      <div ref={mainRef} className="relative w-full h-[90vh] rounded-3xl overflow-hidden px-phone md:px-tab lg:px-desktop" role="region" aria-label="Statistics section">
+        <div className="absolute inset-0">
+          <img src={bgUrl} className="w-full h-full object-cover" alt={section?.backgroundImage ? section?.backgroundImage.alt ?? "background" : "background"} />
+          <div className="absolute inset-0 bg-primary/40" />
+        </div>
 
-        return () => {
-            ctx.revert();
-            ScrollTrigger.getAll().forEach((t) => t.kill());
-        };
-    }, [cards, loading]);
+        <div className="relative z-10 h-full grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-16">
+          <div className="text-white space-y-6 flex flex-col justify-center">
+            <motion.h2 variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="text-5xl md:text-7xl font-extrabold leading-tight">
+              {heading}
+            </motion.h2>
 
-    const bgUrl = section?.backgroundImage ? getSanityImageUrl(section.backgroundImage, { width: 1600 }) : null;
+            <motion.p variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="text-xl md:text-2xl max-w-3xl">
+              {description}
+            </motion.p>
 
-    return (
-        <section className="py-20 px-phone md:px-tab lg:px-desktop">
-            <div ref={mainRef} className="relative container mx-auto rounded-3xl overflow-hidden">
-                <div className="absolute inset-0">
-                    {/* fallback to local image when Sanity background isn't available */}
-                    <img src={bgUrl || statsImg} className="w-full h-full object-cover" alt="background" />
-                    <div className="absolute inset-0 bg-primary/40"></div>
-                </div>
+            <motion.div variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="inline-flex items-center group select-none relative">
+              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFC21A] text-[#0e1510] transition-all duration-300 -mr-px group-hover:opacity-0 group-hover:-translate-x-2" aria-hidden>
+                <span className="text-base leading-none">→</span>
+              </span>
+              <span className="relative inline-block h-12">
+                <a
+                  href={buttonLink || "#"}
+                  aria-label={buttonText}
+                  className="relative inline-flex h-12 items-center justify-center rounded-xl bg-[#FFC21A] text-[#0e1510] px-6 font-semibold tracking-tight transition-[transform,background-color,color,border-color] duration-300 group-hover:-translate-x-12"
+                >
+                  {loading ? (language === "du" ? "Wird geladen..." : "Loading...") : buttonText}
+                </a>
+                <span className="pointer-events-none absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-transparent text-[#0e1510] transition-all duration-300 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#FFC21A] group-hover:border-[#FFC21A]" aria-hidden>
+                  <span className="text-base leading-none">→</span>
+                </span>
+              </span>
+            </motion.div>
+          </div>
 
-                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center p-8 md:p-16">
-                    {/* Left column */}
-                    <div className="text-white space-y-6">
-                        <h2 className="text-h1-phone md:text-h1-tab font-bold leading-tight">
-                            {section?.heading || "Statistics that Speaks For Itself"}
-                        </h2>
+          <div ref={viewportRef} className="relative h-full w-full overflow-hidden" aria-live="polite">
+            <div ref={railRef} className="absolute top-0 left-0 w-full will-change-transform space-y-4">
+              {(cards || []).map((card, index) => {
+                // resolve possible Sanity images/urls
+                const iconImg = getSanityImageUrl(card.iconImage, { width: 40, height: 40 }) || card.iconUrl || null;
+                const cardImage = getSanityImageUrl(card.image, { width: 600 }) || (typeof card.image === "string" ? card.image : null);
+                return (
+                  <div key={card.id ?? `card-${index}`} className="h-[420px] flex items-center justify-center px-4">
+                    <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl w-full h-full flex flex-col">
+                      <div className={`inline-flex items-center gap-2 text-sm font-bold px-3 py-1 rounded-full self-start ${card.tagColor || "bg-gray-200 text-gray-800"}`}>
+                        {/* icon: prefer explicit iconFallback (jsx) if present, then iconImg (url), then nothing */}
+                        {card.iconFallback ? (
+                          <span aria-hidden>{card.iconFallback}</span>
+                        ) : iconImg ? (
+                          <img src={iconImg} alt={card.tag ?? "icon"} className="w-5 h-5" />
+                        ) : null}
+                        <span>{card.tag ?? card.title ?? "—"}</span>
+                      </div>
 
-                        <p className="text-lg">
-                            {section?.description ||
-                                "In just a few years, we’re building more than infrastructure — we’re building trust, community, and measurable climate action..."}
-                        </p>
+                      <div className="flex-grow flex flex-col justify-center items-center text-center mt-4">
+                        {cardImage ? (
+                          <>
+                            <img src={cardImage} alt={card.imageAlt ?? card.title ?? ""} className="max-h-[200px] w-auto mx-auto rounded-md object-contain mb-4" />
+                            {card.imageCaption && <small className="text-sm -mt-2 mb-2">{card.imageCaption}</small>}
+                          </>
+                        ) : card.statValue ? (
+                          <p className="font-bold text-6xl text-gray-800 my-4">{card.statValue}</p>
+                        ) : null}
 
-                        {/* sliding button */}
-                        <div className="inline-flex items-center group select-none relative">
-                            <span
-                                className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFC21A] text-[#0e1510] group-hover:border-[#FFC21A] transition-all duration-300 -mr-px group-hover:opacity-0 group-hover:-translate-x-2"
-                                aria-hidden
-                            >
-                                <span className="text-base leading-none">→</span>
-                            </span>
+                        {card.subText && <p className="font-medium text-gray-600 max-w-xs">{card.subText}</p>}
+                      </div>
 
-                            <span className="relative inline-block h-12">
-                                <a
-                                    href={section?.buttonLink || "#"}
-                                    aria-label={section?.buttonText || "Read Blogs"}
-                                    className="relative inline-flex h-12 items-center justify-center rounded-xl bg-[#FFC21A] text-[#0e1510] px-6 font-semibold tracking-tight transition-[transform,background-color,color,border-color] duration-300 group-hover:-translate-x-12"
-                                >
-                                    {section?.buttonText || "Read Blogs"}
-                                </a>
-
-                                <span className="pointer-events-none absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-transparent text-[#0e1510] transition-all duration-300 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#FFC21A] group-hover:border-[#FFC21A]" aria-hidden>
-                                    <span className="text-base leading-none">→</span>
-                                </span>
-                            </span>
+                      {card.ctaText && (
+                        <div className="mt-auto text-center">
+                          <a
+                            href={card.ctaLink || "#"}
+                            className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 bg-primary rounded-lg text-white"
+                            aria-label={card.ctaText}
+                          >
+                            <span>{card.ctaText}</span> <FaArrowRight />
+                          </a>
                         </div>
+                      )}
                     </div>
-
-                    {/* Right column: vertical scroller with cards */}
-                    <div ref={viewportRef} className="h-[450px] overflow-hidden">
-                        <div ref={cardsRef}>
-                            {(cards || fallbackCards).map((card, index) => {
-                                const iconImg = getSanityImageUrl(card.iconImage, { width: 64, height: 64 }) || card.iconUrl || null;
-                                const cardImage = getSanityImageUrl(card.image, { width: 800 }) || (typeof card.image === "string" ? card.image : null);
-
-                                return (
-                                    <div key={index} className="h-[450px] flex items-center justify-center p-4">
-                                        <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl w-full">
-                                            <div className={`inline-flex items-center gap-2 text-sm font-bold px-3 py-1 rounded-full ${card.tagColor || ""}`}>
-                                                {card.icon ? (
-                                                    card.icon
-                                                ) : iconImg ? (
-                                                    <img src={iconImg} alt={card.tag || "icon"} style={{ width: 20, height: 20 }} />
-                                                ) : null}
-                                                <span>{card.tag || card.title || "—"}</span>
-                                            </div>
-
-                                            <div className="mt-4">
-
-                                                <>
-                                                    {cardImage ? (
-                                                        <div className="mb-4">
-                                                            <img src={cardImage} alt={card.imageAlt || card.title || ""} className="h-[200px] w-auto mx-auto rounded-md" />
-                                                            {card.imageCaption && <small className="text-sm">{card.imageCaption}</small>}
-                                                            {card.statValue && <p className="text-center mt-4 font-semibold text-dark-gray">{card.statValue}</p> }
-                                                        </div>
-                                                    ) : null}
-
-                                                
-                                                </>
-
-
-                                                {card.ctaText && (
-                                                    <div className="mt-6">
-                                                        <a href={card.ctaLink || "#"} className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 bg-primary rounded-lg text-white">
-                                                            <span>{card.ctaText}</span>
-                                                            <FaArrowRight />
-                                                        </a>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
+                  </div>
+                );
+              })}
             </div>
-        </section>
-    );
+          </div>
+        </div>
+      </div>
+
+      {/* lightweight loading / error notice */}
+      {loading && <div className="text-center mt-4 text-sm text-gray-500">{language === "du" ? "Wird geladen..." : "Loading..."}</div>}
+      {error && <div className="text-center mt-4 text-sm text-red-500">Could not load stats data.</div>}
+    </section>
+  );
 }

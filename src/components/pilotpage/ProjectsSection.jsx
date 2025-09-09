@@ -1,14 +1,35 @@
+// src/components/Projects/ProjectsSection.jsx
 import React, { useEffect, useState } from 'react';
-import ScrollReveal from '../utils/ScrollReveal';
+import { motion } from 'framer-motion';
 import ProjectCard from './ProjectCard';
 import { FaWind } from 'react-icons/fa';
-// ✅ import SVG as React component
 import PowerBattery from '../../assets/powerbattery.svg?react';
 import client from '../../lib/sanityClient';
+import useLanguage from '../../hook/useLanguage';
 
-// 🔹 Local fallback data
+const GROQ_QUERY = `*[_type == "pilot"][0].ProjectsSection{
+  heading,
+  projects[] {
+    _key,
+    status,
+    title,
+    description,
+    partners,
+    iconType,
+    "iconUrl": icon.asset->url,
+    customContainerClass,
+    partnerBgClass,
+    buttonPrimaryClass,
+    buttonSecondaryClass,
+    readMoreUrl,
+    getInvolvedUrl,
+    mapUrl
+  }
+}`;
+
 const fallbackProjectsData = [
   {
+    id: 'f-1',
     status: 'IN PLANNING (START 2027)',
     title: 'Windpark Eichenau',
     description:
@@ -20,8 +41,12 @@ const fallbackProjectsData = [
     buttonPrimaryClass: 'bg-m-primary text-white hover:bg-primary',
     buttonSecondaryClass:
       'border-2 border-primary text-primary hover:bg-primary hover:text-white',
+    readMoreUrl: '#',
+    getInvolvedUrl: '#',
+    mapUrl: '#',
   },
   {
+    id: 'f-2',
     status: 'PRE-APPROVAL',
     title: 'Agri-PV Jexhof',
     description:
@@ -33,8 +58,12 @@ const fallbackProjectsData = [
     buttonPrimaryClass: 'bg-white text-primary hover:bg-gray-200',
     buttonSecondaryClass:
       'border-2 border-white text-white hover:bg-white hover:text-primary',
+    readMoreUrl: '#',
+    getInvolvedUrl: '#',
+    mapUrl: '#',
   },
   {
+    id: 'f-3',
     status: 'UNDER ENGINEERING REVIEW',
     title: 'Solarhub Gilching',
     description:
@@ -46,77 +75,100 @@ const fallbackProjectsData = [
     buttonPrimaryClass: 'bg-white text-primary hover:bg-gray-200',
     buttonSecondaryClass:
       'border-2 border-white text-white hover:bg-white hover:text-primary',
+    readMoreUrl: '#',
+    getInvolvedUrl: '#',
+    mapUrl: '#',
     iconClassName:
       'pointer-events-none absolute inset-0 mx-auto my-8 opacity-20 w-[280px] md:w-[420px]',
   },
 ];
 
+const fadeSlide = {
+  hidden: { opacity: 0, x: 30 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
+
+const ICON_MAP = {
+  // keys should match the `iconType` values you store in Sanity
+  FaWind,
+  PowerBattery,
+};
+
+const safeText = (v) => (v === undefined || v === null ? '' : String(v));
+
 const ProjectsSection = () => {
-  const [projectsSection, setProjectsSection] = useState(null);
+  const [language] = useLanguage();
+  const [projectsSection, setProjectsSection] = useState({ heading: '', projects: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const ICON_MAP = { FaWind, PowerBattery };
+  // localized heading fallback
+  const headingFallback = language === 'du' ? 'Projekte' : 'Projects';
+  const loadingText = language === 'du' ? 'Lade Projekte...' : 'Loading Projects...';
 
   useEffect(() => {
     let mounted = true;
 
     async function fetchProjects() {
-      const GROQ_QUERY = `*[_type == "pilot"][0].ProjectsSection{
-        heading,
-        projects[] {
-          status,
-          title,
-          description,
-          partners,
-          iconType,
-          "iconUrl": icon.asset->url,
-          customContainerClass,
-          partnerBgClass,
-          buttonPrimaryClass,
-          buttonSecondaryClass
-        }
-      }`;
-
       try {
+        setLoading(true);
         const data = await client.fetch(GROQ_QUERY);
+
         if (!mounted) return;
 
+        // Normalize Sanity projects
         const processedProjects =
-          data?.projects?.map((p) => ({
-            status: p.status || 'COMING SOON',
-            title: p.title || 'Untitled Project',
-            description: p.description || 'Description not available.',
-            partners: p.partners || 'No partners listed',
-            Icon: p.iconType ? ICON_MAP[p.iconType] : null,
-            customContainerClass: p.customContainerClass || 'bg-white text-primary',
-            partnerBgClass: p.partnerBgClass || 'bg-gray-100',
-            buttonPrimaryClass:
-              p.buttonPrimaryClass ||
-              'bg-blue-500 text-white hover:bg-blue-600',
-            buttonSecondaryClass:
-              p.buttonSecondaryClass ||
-              'border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white',
-          })) || [];
+          Array.isArray(data?.projects) && data.projects.length
+            ? data.projects.map((p, idx) => {
+                const id = p._key ?? `sanity-${idx}`;
+                // Resolve Icon: if iconType maps to a known React component, use it.
+                // Otherwise, if iconUrl provided, pass the URL string to ProjectCard (it will render <img>).
+                let Icon = null;
+                if (p.iconType && ICON_MAP[p.iconType]) {
+                  Icon = ICON_MAP[p.iconType];
+                }
 
-        // ✅ Merge with fallback projects (ensure at least 3)
+                return {
+                  id,
+                  status: safeText(p.status) || 'COMING SOON',
+                  title: safeText(p.title) || 'Untitled Project',
+                  description: safeText(p.description) || 'Description not available.',
+                  partners: safeText(p.partners) || 'No partners listed',
+                  Icon: Icon ?? (p.iconUrl ? p.iconUrl : null),
+                  iconUrl: p.iconUrl ?? null,
+                  customContainerClass: safeText(p.customContainerClass) || 'bg-white text-primary',
+                  partnerBgClass: safeText(p.partnerBgClass) || 'bg-gray-100',
+                  buttonPrimaryClass:
+                    safeText(p.buttonPrimaryClass) || 'bg-blue-500 text-white hover:bg-blue-600',
+                  buttonSecondaryClass:
+                    safeText(p.buttonSecondaryClass) ||
+                    'border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white',
+                  readMoreUrl: safeText(p.readMoreUrl) || '#',
+                  getInvolvedUrl: safeText(p.getInvolvedUrl) || '#',
+                  mapUrl: safeText(p.mapUrl) || '#',
+                };
+              })
+            : [];
+
+        // If Sanity returned fewer items than fallbacks, fill with fallback items to keep layout consistent
         const finalProjects =
           processedProjects.length > 0
-            ? [...processedProjects, ...fallbackProjectsData.slice(processedProjects.length)]
+            ? [
+                ...processedProjects,
+                ...fallbackProjectsData.slice(Math.max(0, processedProjects.length)),
+              ]
             : fallbackProjectsData;
 
         setProjectsSection({
-          heading: data?.heading || 'Projects',
+          heading: safeText(data?.heading) || headingFallback,
           projects: finalProjects,
         });
       } catch (err) {
-        console.error('Sanity fetch error:', err);
+        console.warn('ProjectsSection fetch failed', err);
         if (!mounted) return;
         setError(err);
-
-        // ✅ If fetch fails, fall back entirely
         setProjectsSection({
-          heading: 'Projects',
+          heading: headingFallback,
           projects: fallbackProjectsData,
         });
       } finally {
@@ -129,32 +181,45 @@ const ProjectsSection = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [language]);
 
-  if (loading) return <p>Loading Projects...</p>;
+  if (loading) return <p className="text-center py-12">{loadingText}</p>;
 
   return (
-    <section className="py-20 px-phone md:px-tab lg:px-desktop bg-gray-50">
-      <div className="container mx-auto">
-        <ScrollReveal>
-          <h2 className="text-h2-phone md:text-h2-tab font-bold text-primary mb-12">
-            {projectsSection?.heading || 'Projects'}
-          </h2>
-        </ScrollReveal>
+    <section className="py-20 px-phone md:px-tab lg:px-desktop bg-gray-50" id="scroll-project" aria-labelledby="projects-heading">
+      <div className="w-full">
+        <motion.h2
+          id="projects-heading"
+          variants={fadeSlide}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-h2-phone md:text-h2-tab font-bold text-primary mb-12"
+        >
+          {projectsSection?.heading || headingFallback}
+        </motion.h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projectsSection?.projects?.map((project, index) => (
-            <div key={index} className={index === 2 ? 'md:col-span-2' : ''}>
-              <ScrollReveal delay={index * 0.1}>
-                <ProjectCard project={project} />
-              </ScrollReveal>
-            </div>
+            <motion.div
+              key={project.id ?? `${index}-${project.title}`}
+              variants={fadeSlide}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ delay: (index % 2) * 0.08 }}
+              className={index === 2 ? 'md:col-span-2' : ''}
+            >
+              <ProjectCard project={project} />
+            </motion.div>
           ))}
         </div>
 
         {error && (
-          <div className="mt-4 text-red-500 text-sm text-center">
-            Unable to load Projects content from Sanity. Showing fallback data.
+          <div className="mt-4 text-red-500 text-sm text-center" role="status" aria-live="polite">
+            {language === 'du'
+              ? 'Projekte konnten nicht aus Sanity geladen werden. Fallback-Daten werden angezeigt.'
+              : 'Unable to load Projects content from Sanity. Showing fallback data.'}
           </div>
         )}
       </div>

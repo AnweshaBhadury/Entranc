@@ -3,6 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: #fff;
   color: #24341D;
@@ -10,7 +15,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-
+.pb-safe-bottom-nav {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 72px);
+}
+@media (min-width: 640px) {
+  .pb-safe-bottom-nav { padding-bottom: 1.5rem; }
+}
 
 .slanted-divider::after {
   content: '';
@@ -42,6 +52,5 @@ body {
   100% { transform: translateX(0)    scale(1); }
 }
 
-/* Utility classes */
 .animate-crash-left  { animation: crash-in-left 900ms cubic-bezier(.2,.8,.2,1) both; }
 .animate-crash-right { animation: crash-in-right 900ms cubic-bezier(.2,.8,.2,1) both; }

@@ -7,7 +7,7 @@ const AccordionItem = ({ question, answer }) => {
 
   return (
     <div className="border-b border-gray-200 py-6">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center text-left"
       >

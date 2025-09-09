@@ -4,6 +4,25 @@ import { motion } from 'framer-motion';
 import { FaArrowDown } from 'react-icons/fa';
 import hero2Fallback from '../../assets/abouthero.jpg';
 import client from '../../lib/sanityClient';
+import BlurZoomBg from '../common/BlurZoomBg';
+import useLanguage from '../../hook/useLanguage';
+
+
+const translations = {
+  en: {
+    heading: 'About EnTranC',
+    subheading: '',
+    scroll: 'Scroll',
+    bgAlt: 'About Hero Background',
+  },
+  du: {
+    heading: 'Über EnTranC',
+    subheading: '',
+    scroll: 'Scrollen',
+    bgAlt: 'Über Hero Hintergrund',
+  },
+};
+
 
 const GROQ_QUERY = `*[_type == "about"][0].AboutHero{
   heading,
@@ -17,6 +36,10 @@ const AboutHero = () => {
   const [hero, setHero] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [language] = useLanguage();
+
+  // Fallback values with translations applied
+  const t = (key) => (translations[language] && translations[language][key]) || translations.en[key] || '';
 
   useEffect(() => {
     let mounted = true;
@@ -26,7 +49,6 @@ const AboutHero = () => {
         if (!mounted) return;
         setHero(data || null);
       } catch (err) {
-        console.error('Sanity fetch error:', err);
         if (!mounted) return;
         setError(err);
       } finally {
@@ -38,24 +60,17 @@ const AboutHero = () => {
     return () => { mounted = false; };
   }, []);
 
-  const bgImageUrl = hero?.backgroundImageUrl ?? hero2Fallback;
-  const bgAlt = hero?.backgroundImageAlt ?? 'About Hero Background';
-  const heading = hero?.heading ?? 'About EnTranC';
-  const subheading = hero?.subheading ?? '';
-  const scrollText = hero?.scrollIndicatorText ?? 'Scroll';
 
+
+  const bgImageUrl = hero?.backgroundImageUrl ?? hero2Fallback;
+  const bgAlt = hero?.backgroundImageAlt ?? t('bgAlt');
+  const heading = hero?.heading ?? t('heading');
+  const subheading = hero?.subheading ?? t('subheading');
+  const scrollText = hero?.scrollIndicatorText ?? t('scroll');
   return (
     <section className="h-[90vh] w-full relative flex items-center justify-center text-white rounded-3xl overflow-hidden">
-      <div className="absolute inset-0 bg-black/50 z-10"></div>
-
-      <motion.img
-        initial={{ scale: 1.5 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 2.5, ease: [0.22, 1, 0.36, 1] }}
-        src={bgImageUrl}
-        alt={bgAlt}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <div className="absolute inset-0 bg-black/50 z-10" />
+      <BlurZoomBg src={bgImageUrl} alt={bgAlt} />
 
       <div className="relative z-20 text-center p-4">
         <motion.h1
@@ -88,12 +103,16 @@ const AboutHero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-24 left-10 z-20 flex flex-col items-center gap-2"
+        className="absolute bottom-24 left-10 z-20"
       >
-        <div className="bg-black/50 p-2 rounded-full">
-          <span className="font-semibold text-xs">{scrollText}</span>
-          <FaArrowDown className="animate-bounce mt-1 mx-auto" />
-        </div>
+        <a
+          href="#scroll-about"
+          aria-label="Scroll to About section"
+          className="flex flex-col items-center gap-2"
+        >
+          <span className="bg-black/50 px-3 py-2 rounded-full text-xs font-semibold">{scrollText}</span>
+          <FaArrowDown className="animate-bounce" />
+        </a>
       </motion.div>
 
       {error && (

@@ -8,6 +8,7 @@ import ContactPage from './pages/ContactPage';
 import FloatingNav from './components/common/FloatingNav';
 import Header from './components/common/Header';
 
+
 const App = () => {
   return (
     <Router>

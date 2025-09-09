@@ -1,26 +1,78 @@
-// src/components/ContactForm/ContactFormSection.jsx
+// src/components/Contact/ContactFormSection.jsx
 import React, { useEffect, useState } from "react";
-import ScrollReveal from "../utils/ScrollReveal";
-import { FaInstagram, FaEnvelope, FaFacebook, FaDrawPolygon } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { FaInstagram, FaEnvelope, FaFacebook } from "react-icons/fa";
 import client from "../../lib/sanityClient";
+import { submitContact } from "../../lib/sanityWriteClient";
+import useLanguage from "../../hook/useLanguage";
 
 const GROQ_QUERY = `*[_type == "contact"][0].ContactFormSection{
   heading,
   subText,
-  socialLinks[]{
-    platform,
-    url
-  },
+  socialLinks[]{ platform, url },
   mapEmbedUrl,
-  formFields[]{
-    label,
-    type,
-    placeholder
-  },
+  formFields[]{ label, type, placeholder },
   buttonText
 }`;
 
+const fadeSlide = {
+  hidden: { opacity: 0, x: 50 },
+  show:   { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
+
+// Localized fallbacks for English + German
+const localizedFallbacks = {
+  en: {
+    heading: "Let's Get In Touch",
+    subText: "We'd love to hear from you!",
+    socialLinks: [
+      { platform: "Instagram", url: "#" },
+      { platform: "Facebook", url: "#" },
+      { platform: "Email", url: "#" },
+    ],
+    mapEmbedUrl:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2685.398625232924!2d11.25522801563303!3d47.69629897919098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479cf53610991307%3A0x253900971841a141!2sBavaria!5e0!3m2!1sen!2sde!4v1678283123456!5m2!1sen!2sde",
+    formFields: [
+      { label: "Name", type: "text", placeholder: "Your Name" },
+      { label: "Email", type: "email", placeholder: "Your Email" },
+      { label: "Message", type: "textarea", placeholder: "Your Message" },
+    ],
+    buttonText: "Submit",
+    submittingText: "Submitting...",
+    successMessage: "Message sent!",
+    fillAllFields: "Please fill out all fields.",
+    submitFailed: "Failed to submit form. Please try again later.",
+  },
+  du: {
+    heading: "Lassen Sie uns in Kontakt treten",
+    subText: "Wir freuen uns, von Ihnen zu hören!",
+    socialLinks: [
+      { platform: "Instagram", url: "#" },
+      { platform: "Facebook", url: "#" },
+      { platform: "Email", url: "#" },
+    ],
+    mapEmbedUrl:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2685.398625232924!2d11.25522801563303!3d47.69629897919098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479cf53610991307%3A0x253900971841a141!2sBavaria!5e0!3m2!1sen!2sde!4v1678283123456!5m2!1sen!2sde",
+    formFields: [
+      { label: "Name", type: "text", placeholder: "Ihr Name" },
+      { label: "Email", type: "email", placeholder: "Ihre E-Mail" },
+      { label: "Message", type: "textarea", placeholder: "Ihre Nachricht" },
+    ],
+    buttonText: "Absenden",
+    submittingText: "Wird gesendet...",
+    successMessage: "Nachricht gesendet!",
+    fillAllFields: "Bitte füllen Sie alle Felder aus.",
+    submitFailed: "Senden fehlgeschlagen. Bitte später erneut versuchen.",
+  },
+};
+
 const ContactFormSection = () => {
+  const [language] = useLanguage();
+  const tFallback = (key) => {
+    const cur = localizedFallbacks[language] ?? localizedFallbacks.en;
+    return cur[key];
+  };
+
   const [data, setData] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -29,130 +81,115 @@ const ContactFormSection = () => {
   const [error, setError] = useState(null);
   const [docId, setDocId] = useState(null);
 
-  // Fetch form data & document ID
   useEffect(() => {
     let mounted = true;
-
     async function fetchData() {
       try {
-        // Fetch document ID
         const idQuery = `*[_type == "contact"][0]._id`;
         const fetchedId = await client.fetch(idQuery);
         if (!mounted) return;
         setDocId(fetchedId);
 
-        // Fetch ContactFormSection data
         const res = await client.fetch(GROQ_QUERY);
         if (!mounted) return;
 
-        // Fallback data
-        const fallback = {
-          heading: "Let's Get In Touch",
-          subText: "We'd love to hear from you!",
-          socialLinks: [
-            { platform: "Instagram", url: "#" },
-            { platform: "Facebook", url: "#" },
-            { platform: "Email", url: "#" },
-          ],
-          mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2685.398625232924!2d11.25522801563303!3d47.69629897919098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479cf53610991307%3A0x253900971841a141!2sBavaria!5e0!3m2!1sen!2sde!4v1678283123456!5m2!1sen!2sde",
-          formFields: [
-            { label: "Name", type: "text", placeholder: "Your Name" },
-            { label: "Email", type: "email", placeholder: "Your Email" },
-            { label: "Message", type: "textarea", placeholder: "Your Message" },
-          ],
-          buttonText: "Submit",
+        // prefer Sanity -> localized fallback
+        const fallback = localizedFallbacks[language] ?? localizedFallbacks.en;
+        const finalData = {
+          heading: res?.heading ?? fallback.heading,
+          subText: res?.subText ?? fallback.subText,
+          socialLinks: Array.isArray(res?.socialLinks) && res.socialLinks.length ? res.socialLinks : fallback.socialLinks,
+          mapEmbedUrl: res?.mapEmbedUrl ?? fallback.mapEmbedUrl,
+          formFields: Array.isArray(res?.formFields) && res.formFields.length ? res.formFields : fallback.formFields,
+          buttonText: res?.buttonText ?? fallback.buttonText,
         };
 
-        const finalData = res || fallback;
         setData(finalData);
 
-        // Initialize formData
-        const initialFormData = {};
-        (finalData.formFields ?? []).forEach(field => {
-          initialFormData[field.label.toLowerCase()] = "";
+        // initialize form data keys (lowercased label)
+        const initial = {};
+        (finalData.formFields ?? []).forEach((field) => {
+          initial[field.label.toLowerCase()] = "";
         });
-        setFormData(initialFormData);
+        setFormData(initial);
       } catch (err) {
-        console.error("Sanity fetch error:", err);
+        console.error("Contact form fetch failed:", err);
         if (!mounted) return;
         setError("Failed to load form data");
-        // Fallback values
-        const fallback = {
-          heading: "Let's Get In Touch",
-          subText: "We'd love to hear from you!",
-          socialLinks: [
-            { platform: "Instagram", url: "#" },
-            { platform: "Facebook", url: "#" },
-            { platform: "Email", url: "#" },
-          ],
-          mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2685.398625232924!2d11.25522801563303!3d47.69629897919098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479cf53610991307%3A0x253900971841a141!2sBavaria!5e0!3m2!1sen!2sde!4v1678283123456!5m2!1sen!2sde",
-          formFields: [
-            { label: "Name", type: "text", placeholder: "Your Name" },
-            { label: "Email", type: "email", placeholder: "Your Email" },
-            { label: "Message", type: "textarea", placeholder: "Your Message" },
-          ],
-          buttonText: "Submit",
+        const fallback = localizedFallbacks[language] ?? localizedFallbacks.en;
+        const finalData = {
+          heading: fallback.heading,
+          subText: fallback.subText,
+          socialLinks: fallback.socialLinks,
+          mapEmbedUrl: fallback.mapEmbedUrl,
+          formFields: fallback.formFields,
+          buttonText: fallback.buttonText,
         };
-        setData(fallback);
-
-        const initialFormData = {};
-        (fallback.formFields ?? []).forEach(field => {
-          initialFormData[field.label.toLowerCase()] = "";
+        setData(finalData);
+        const initial = {};
+        (finalData.formFields ?? []).forEach((field) => {
+          initial[field.label.toLowerCase()] = "";
         });
-        setFormData(initialFormData);
+        setFormData(initial);
       } finally {
         if (!mounted) return;
         setLoading(false);
       }
     }
-
     fetchData();
     return () => { mounted = false; };
-  }, []);
+  }, [language]);
 
-  const heading = data?.heading;
-  const subText = data?.subText;
-  const socialLinks = data?.socialLinks;
-  const mapEmbedUrl = data?.mapEmbedUrl;
-  const formFields = data?.formFields;
-  const buttonText = data?.buttonText;
+  const heading = data?.heading ?? tFallback("heading");
+  const subText = data?.subText ?? tFallback("subText");
+  const socialLinks = Array.isArray(data?.socialLinks) ? data.socialLinks : tFallback("socialLinks");
+  const mapEmbedUrl = data?.mapEmbedUrl ?? tFallback("mapEmbedUrl");
+  const formFields = Array.isArray(data?.formFields) ? data.formFields : tFallback("formFields");
+  const buttonText = data?.buttonText ?? tFallback("buttonText");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const sanitizeUrl = (url) => {
+    try {
+      if (!url) return "#";
+      const u = new URL(url, window.location.origin);
+      return u.href;
+    } catch {
+      return "#";
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!docId) return setError("Document not loaded yet.");
     setSubmitLoading(true);
     setError(null);
     setSuccess(false);
 
+    // basic client-side validation: require all fields non-empty
+    const requiredKeys = (formFields ?? []).map((f) => f.label.toLowerCase());
+    const values = requiredKeys.reduce((acc, key) => ({ ...acc, [key]: (formData[key] || "").trim() }), {});
+    const empty = requiredKeys.find((k) => !values[k]);
+    if (empty) {
+      setError(tFallback("fillAllFields"));
+      setSubmitLoading(false);
+      return;
+    }
+
+    const name = values.name ?? values['your name'] ?? values[requiredKeys[0]] ?? "";
+    const email = values.email ?? values['your email'] ?? "";
+    const message = values.message ?? values['your message'] ?? values[requiredKeys[requiredKeys.length - 1]] ?? "";
+
     try {
-      await client
-        .patch(docId)
-        .setIfMissing({ ContactFormSection: { submissions: [] } })
-        .append("ContactFormSection.submissions", [
-          {
-            name: formData.name || "",
-            email: formData.email || "",
-            message: formData.message || "",
-            submittedAt: new Date().toISOString(),
-          },
-        ])
-        .commit();
-
+      // submitContact(name, email, message) is expected to create a contact document in Sanity
+      await submitContact(name, email, message);
       setSuccess(true);
-
-      // Reset form
+      // reset form
       const resetData = {};
-      formFields.forEach(field => {
-        resetData[field.label.toLowerCase()] = "";
-      });
+      requiredKeys.forEach((k) => { resetData[k] = ""; });
       setFormData(resetData);
     } catch (err) {
-      console.error("Form submission error:", err);
-      setError("Failed to submit form.");
+      console.error("Submit error:", err);
+      setError(tFallback("submitFailed"));
     } finally {
       setSubmitLoading(false);
     }
@@ -161,87 +198,142 @@ const ContactFormSection = () => {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <section className="relative py-20 px-phone md:px-tab lg:px-desktop bg-bg-lightyellow rounded-3xl mt-10 overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center text-s2/10 z-0">
-        <FaDrawPolygon size={800} />
+    <section className="relative py-20 px-phone md:px-tab lg:px-desktop bg-bg-lightyellow rounded-3xl mt-10 overflow-hidden" id="scroll-contact" aria-labelledby="contact-form-heading">
+      <div className="absolute inset-0 flex items-center justify-center text-s2/10 z-0 pointer-events-none">
+        {/* decorative */}
+        <svg width="0" height="0" aria-hidden="true" focusable="false" />
       </div>
 
       <div className="relative z-10 container mx-auto grid md:grid-cols-2 gap-x-16 gap-y-12">
-        <ScrollReveal>
-          <div className="space-y-6">
-            <h2 className="text-h2-phone md:text-h2-tab font-bold text-primary leading-tight">{heading}</h2>
-            <p className="text-dark-gray text-lg">{subText}</p>
+        <div className="space-y-6">
+          <motion.h2
+            id="contact-form-heading"
+            variants={fadeSlide}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            className="text-h2-phone md:text-h2-tab font-bold text-primary leading-tight"
+          >
+            {heading}
+          </motion.h2>
 
-            <div className="flex gap-4 pt-4">
-              {socialLinks.map((link, idx) => {
-                const Icon =
-                  link.platform === "Instagram"
-                    ? FaInstagram
-                    : link.platform === "Facebook"
-                    ? FaFacebook
-                    : FaEnvelope;
-                return (
-                  <a key={idx} href={link.url} className="bg-s2 text-m-s2 p-4 rounded-xl text-2xl hover:scale-110 transition-transform">
-                    <Icon />
-                  </a>
-                );
-              })}
-            </div>
+          <motion.p
+            variants={fadeSlide}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            className="text-dark-gray text-lg"
+          >
+            {subText}
+          </motion.p>
 
-            {mapEmbedUrl && (
-              <div className="rounded-2xl overflow-hidden shadow-lg mt-8">
-                <iframe
-                  src={mapEmbedUrl}
-                  className="w-full h-80 border-0"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Location Map"
-                />
-              </div>
-            )}
-          </div>
-        </ScrollReveal>
+          <motion.div
+            variants={fadeSlide}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            className="flex gap-4 pt-4"
+          >
+            {socialLinks.map((link, idx) => {
+              const platform = (link.platform || "").toLowerCase();
+              const Icon =
+                platform.includes("instagram") ? FaInstagram :
+                platform.includes("facebook") ? FaFacebook :
+                FaEnvelope;
+              const href = sanitizeUrl(link.url);
+              return (
+                <a
+                  key={link.platform ?? idx}
+                  href={href}
+                  className="bg-s2 text-m-s2 p-4 rounded-xl text-2xl hover:scale-110 transition-transform"
+                  target={href === "#" ? undefined : "_blank"}
+                  rel={href === "#" ? undefined : "noopener noreferrer"}
+                  aria-label={link.platform ?? `social-${idx}`}
+                >
+                  <Icon />
+                </a>
+              );
+            })}
+          </motion.div>
 
-        <ScrollReveal delay={0.2}>
-          <div className="bg-white p-8 rounded-2xl shadow-lg">
-            <h3 className="text-xl font-bold text-primary mb-8">Drop A Message</h3>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {formFields.map((field, idx) => (
-                <div key={idx}>
-                  <label className="block text-base font-semibold text-primary mb-2">{field.label}</label>
+          {mapEmbedUrl && mapEmbedUrl !== "#" && (
+            <motion.div
+              variants={fadeSlide}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              className="rounded-2xl overflow-hidden shadow-lg mt-8"
+            >
+              <iframe
+                src={sanitizeUrl(mapEmbedUrl)}
+                className="w-full h-80 border-0"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Location Map"
+              />
+            </motion.div>
+          )}
+        </div>
+
+        <motion.div
+          variants={fadeSlide}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          className="bg-white p-8 rounded-2xl shadow-lg"
+        >
+          <h3 className="text-xl font-bold text-primary mb-8">{tFallback("heading")}</h3>
+
+          <form className="space-y-6" onSubmit={handleSubmit} aria-live="polite">
+            {formFields.map((field, idx) => {
+              const name = field.label.toLowerCase();
+              const value = formData[name] ?? "";
+              return (
+                <div key={name ?? idx}>
+                  <label htmlFor={`field-${idx}`} className="block text-base font-semibold text-primary mb-2">
+                    {field.label}
+                  </label>
                   {field.type === "textarea" ? (
                     <textarea
-                      name={field.label.toLowerCase()}
+                      id={`field-${idx}`}
+                      name={name}
                       rows={5}
                       placeholder={field.placeholder}
-                      value={formData[field.label.toLowerCase()] || ""}
+                      value={value}
                       onChange={handleChange}
                       className="w-full p-4 bg-gray-100 border-2 border-transparent rounded-lg focus:outline-none focus:border-s2 focus:bg-white"
                     />
                   ) : (
                     <input
-                      type={field.type}
-                      name={field.label.toLowerCase()}
+                      id={`field-${idx}`}
+                      type={field.type || "text"}
+                      name={name}
                       placeholder={field.placeholder}
-                      value={formData[field.label.toLowerCase()] || ""}
+                      value={value}
                       onChange={handleChange}
                       className="w-full p-4 bg-gray-100 border-2 border-transparent rounded-lg focus:outline-none focus:border-s2 focus:bg-white"
                     />
                   )}
                 </div>
-              ))}
-              <button
-                type="submit"
-                className="w-full bg-m-s2 text-white font-bold py-4 rounded-xl text-lg hover:bg-yellow-800 transition-colors"
-              >
-                {submitLoading ? "Submitting..." : buttonText}
-              </button>
-            </form>
-            {success && <p className="mt-4 text-green-500">Message sent!</p>}
-            {error && <p className="mt-4 text-red-500">{error}</p>}
+              );
+            })}
+
+            <button
+              type="submit"
+              className="w-full bg-m-s2 text-white font-bold py-4 rounded-xl text-lg hover:bg-yellow-800 transition-colors"
+              disabled={submitLoading}
+              aria-busy={submitLoading}
+            >
+              {submitLoading ? tFallback("submittingText") : buttonText}
+            </button>
+          </form>
+
+          <div className="mt-4" role="status" aria-live="polite">
+            {success && <p className="text-green-500">{tFallback("successMessage")}</p>}
+            {error && <p className="text-red-500">{error}</p>}
           </div>
-        </ScrollReveal>
+        </motion.div>
       </div>
     </section>
   );

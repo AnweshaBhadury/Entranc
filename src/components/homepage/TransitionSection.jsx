@@ -1,11 +1,11 @@
-// src/components/TransitionSection/TransitionSection.jsx
+// src/components/Transition/TransitionSection.jsx
 import React, { useEffect, useState } from 'react';
-import ScrollReveal from '../utils/ScrollReveal';
-import { FaArrowRight, FaLightbulb } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { FaLightbulb } from 'react-icons/fa';
 import powerGridFallback from '../../assets/homei2.png';
-import client, { urlFor } from '../../lib/sanityClient'; // client.fetch + urlFor(image).width(...).url()
+import client, { urlFor } from '../../lib/sanityClient';
+import useLanguage from '../../hook/useLanguage';
 
-// GROQ: assumes `TransitionSection` is an object on the `home` document
 const GROQ_QUERY = `*[_type == "home" && defined(TransitionSection)][0]{
   "transition": TransitionSection{
     label,
@@ -15,20 +15,72 @@ const GROQ_QUERY = `*[_type == "home" && defined(TransitionSection)][0]{
     ctaLink,
     "imageUrl": image.asset->url,
     "imageAlt": image.alt,
-    "imageLqip": image.asset->metadata.lqip
+    "imageLqip": image.asset->metadata.lqip,
+    extraText
   }
 }`;
 
+const fadeSlide = {
+  hidden: { opacity: 0, x: 30 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
+
 const isExternal = (url = '') => /^https?:\/\//i.test(url || '');
 
+function getSanityImageUrl(img, { width = 1200, autoFormat = true } = {}) {
+  if (!img) return null;
+  try {
+    // If it's already a string URL, return it
+    if (typeof img === 'string') {
+      return img.trim() === '' ? null : img;
+    }
+    // otherwise assume it's a Sanity image object
+    let builder = urlFor(img).width(width);
+    if (autoFormat) builder = builder.auto('format');
+    return builder.url();
+  } catch {
+    return null;
+  }
+}
+
+// Localized fallback copy
+const localized = {
+  en: {
+    label: 'EnTranC',
+    heading: 'Powering the\ntransition\n together.',
+    description:
+      'A citizen-led cooperative model accelerating renewable energy across Europe — in sync with the EU’s LIFE and Green Deal goals.',
+    ctaText: 'Read Blogs',
+    ctaLink: '#',
+    imageAlt: 'Illustration of a power grid in a green landscape',
+    extraText: 'COMMUNITY ENERGY · EU SUPPORTED',
+    loading: 'Loading...',
+    loadingCta: 'Loading...',
+  },
+  du: {
+    label: 'EnTranC',
+    heading: 'Die Energiewende\ngemeinsam\nvorantreiben.',
+    description:
+      'Ein bürgergeleitetes Genossenschaftsmodell zur Beschleunigung erneuerbarer Energieprojekte in ganz Europa – im Einklang mit LIFE und dem Green Deal der EU.',
+    ctaText: 'Blogs lesen',
+    ctaLink: '#',
+    imageAlt: 'Illustration eines Stromnetzes in einer grünen Landschaft',
+    extraText: 'GEMEINSCHAFTSENERGIE · EU GEFÖRDERT',
+    loading: 'Wird geladen…',
+    loadingCta: 'Wird geladen…',
+  },
+};
+
 const TransitionSection = () => {
+  const [language] = useLanguage();
+  const t = (key) => (localized[language] && localized[language][key]) || localized.en[key];
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
-
     async function fetchData() {
       try {
         setLoading(true);
@@ -36,7 +88,7 @@ const TransitionSection = () => {
         if (!mounted) return;
         setData(res?.transition ?? null);
       } catch (err) {
-        console.error('Sanity fetch error (TransitionSection):', err);
+        console.warn('TransitionSection fetch failed:', err);
         if (!mounted) return;
         setError(err);
       } finally {
@@ -44,39 +96,37 @@ const TransitionSection = () => {
         setLoading(false);
       }
     }
-
     fetchData();
     return () => {
       mounted = false;
     };
   }, []);
 
-  // content fallbacks
-  const label = data?.label ?? 'EnTranC';
-  const heading =
-    data?.heading ??
-    `Powering the\ntransition\n together.`; // keep breaks consistent with original
-  const description =
-    data?.description ??
-    'A citizen-led cooperative model accelerating renewable energy across Europe — in sync with the EU’s LIFE and Green Deal goals.';
-  const ctaText = data?.ctaText ?? 'Read Blogs';
-  const ctaLink = data?.ctaLink ?? '';
-  const imageAlt =
-    data?.imageAlt ?? 'Illustration of a power grid in a green landscape';
+  // Derived values with precedence: Sanity -> localized fallback -> static fallback
+  const label = data?.label ?? t('label');
+  const heading = data?.heading ?? t('heading');
+  const description = data?.description ?? t('description');
+  const ctaText = data?.ctaText ?? t('ctaText');
+  const ctaLink = data?.ctaLink ?? t('ctaLink');
+  const imageAlt = data?.imageAlt ?? t('imageAlt');
+  const extraText = data?.extraText ?? t('extraText');
 
-  // Use urlFor if available to request a sized image, else fallback to asset url or local image
+  // image handling: prefer Sanity imageUrl string if present; otherwise use builder when image object is provided
+  // original GROQ returns imageUrl (string) and imageLqip; but be defensive in case schemas differ
+  const rawImageUrl = data?.imageUrl ?? null;
+  const lqip = data?.imageLqip ?? null;
+
+  // Try to build a proper src: if rawImageUrl is already a string use it; else fallback to powerGridFallback
   let imageSrc = powerGridFallback;
-  let lqip = null;
-  if (data?.imageUrl) {
-    try {
-      // prefer using urlFor so we can request a reasonable width for different viewports
-      // urlFor(image).width(800).auto('format').url()
-      imageSrc = urlFor({ _ref: data.imageUrl }).width(1200).auto('format').url() ?? data.imageUrl;
-    } catch {
-      // If urlFor is not configured to accept the raw url, try direct asset url
-      imageSrc = data.imageUrl;
+  try {
+    if (rawImageUrl && typeof rawImageUrl === 'string') {
+      imageSrc = rawImageUrl;
+    } else if (data?.image && typeof data.image === 'object') {
+      const built = getSanityImageUrl(data.image, { width: 1200 });
+      if (built) imageSrc = built;
     }
-    lqip = data?.imageLqip ?? null;
+  } catch {
+    imageSrc = powerGridFallback;
   }
 
   const hasCta = !!ctaLink && ctaLink !== '#';
@@ -85,31 +135,47 @@ const TransitionSection = () => {
     <section className="relative bg-white" aria-labelledby="transition-heading">
       <div className="mx-auto max-w-7xl px-6 md:px-12 lg:px-16 py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* LEFT: text */}
-          <ScrollReveal as="div" className="space-y-6" y={16} threshold={0.1}>
-            <p className="font-bold inline-flex items-center gap-2 text-base md:text-lg">
+          <div className="space-y-6">
+            <motion.p
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={fadeSlide}
+              className="font-bold inline-flex items-center gap-2 text-base md:text-lg"
+            >
               <FaLightbulb aria-hidden /> <span>{label}</span>
-            </p>
+            </motion.p>
 
-            <h2
+            <motion.h2
               id="transition-heading"
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={fadeSlide}
               className="font-bold leading-[1.05] text-[clamp(2rem,4vw+0.8rem,4rem)] text-[#22351f] whitespace-pre-line"
             >
-              {heading}
-            </h2>
+              {String(heading)}
+            </motion.h2>
 
-            {/* description */}
-            <p className="mt-4 text-base text-[#29411f] max-w-prose">{description}</p>
+            <motion.p
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={fadeSlide}
+              className="mt-4 text-base text-[#29411f] max-w-prose"
+            >
+              {description}
+            </motion.p>
 
-            {/* sliding button */}
-            <div className="inline-flex items-center group select-none relative">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={fadeSlide}
+              className="inline-flex items-center group select-none relative"
+            >
               <span
-                className="
-                  pointer-events-none flex h-12 w-12 items-center justify-center
-                  rounded-xl border border-[#1a2a17] text-[#1a2a17] bg-white
-                  transition-all duration-300 -mr-px
-                  group-hover:opacity-0 group-hover:-translate-x-2
-                "
+                className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-xl border border-[#1a2a17] text-[#1a2a17] bg-white transition-all duration-300 -mr-px group-hover:opacity-0 group-hover:-translate-x-2"
                 aria-hidden="true"
               >
                 <span className="text-base leading-none">→</span>
@@ -122,59 +188,35 @@ const TransitionSection = () => {
                     target={isExternal(ctaLink) ? '_blank' : undefined}
                     rel={isExternal(ctaLink) ? 'noopener noreferrer' : undefined}
                     aria-label={ctaText}
-                    className="
-                      relative inline-flex h-12 items-center justify-center
-                      rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17]
-                      px-6 font-semibold tracking-tight
-                      transition-[transform,background-color,color,border-color] duration-300
-                      group-hover:-translate-x-12
-                      group-hover:bg-[#FFC21A] group-hover:text-[#0e1510] group-hover:border-[#FFC21A]
-                    "
+                    className="relative inline-flex h-12 items-center justify-center rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] px-6 font-semibold tracking-tight transition-[transform,background-color,color,border-color] duration-300 group-hover:-translate-x-12 group-hover:bg-[#FFC21A] group-hover:text-[#0e1510] group-hover:border-[#FFC21A]"
                   >
-                    <span>{loading ? 'Loading...' : ctaText}</span>
+                    <span>{loading ? t('loadingCta') : ctaText}</span>
                   </a>
                 ) : (
                   <button
                     aria-label={ctaText}
                     disabled
-                    className="
-                      relative inline-flex h-12 items-center justify-center
-                      rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] opacity-70
-                      px-6 font-semibold tracking-tight cursor-not-allowed select-none
-                    "
+                    className="relative inline-flex h-12 items-center justify-center rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] opacity-70 px-6 font-semibold tracking-tight cursor-not-allowed select-none"
                   >
-                    <span>{loading ? 'Loading...' : ctaText}</span>
+                    <span>{loading ? t('loadingCta') : ctaText}</span>
                   </button>
                 )}
 
                 <span
-                  className="
-                    pointer-events-none absolute top-0 right-0
-                    flex h-12 w-12 items-center justify-center rounded-xl
-                    border border-transparent bg-transparent text-[#0e1510]
-                    transition-all duration-300 opacity-0 translate-x-2
-                    group-hover:opacity-100 group-hover:translate-x-0
-                    group-hover:bg-[#FFC21A] group-hover:border-[#FFC21A]
-                  "
+                  className="pointer-events-none absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-transparent text-[#0e1510] transition-all duration-300 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#FFC21A] group-hover:border-[#FFC21A]"
                   aria-hidden="true"
                 >
                   <span className="text-base leading-none">→</span>
                 </span>
               </span>
-            </div>
-          </ScrollReveal>
+            </motion.div>
+          </div>
 
-          {/* RIGHT: image + aside */}
-          <ScrollReveal as="div" className="space-y-6" y={16} delay={120} threshold={0.1}>
+          <div className="space-y-6">
             <div className="mx-auto lg:mx-0 max-w-[620px]">
-              {/* if lqip exists, use it as inline background for a progressive blur-up effect */}
               <div
                 className="w-full overflow-hidden rounded-lg"
-                style={{
-                  backgroundImage: lqip ? `url("${lqip}")` : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
+                style={lqip ? { backgroundImage: `url("${lqip}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
                 aria-hidden={!!lqip}
               >
                 <img
@@ -183,34 +225,26 @@ const TransitionSection = () => {
                   className="block w-full h-auto object-contain"
                   loading="lazy"
                   decoding="async"
-                  style={{
-                    // when lqip present, transition from blurred bg to final image
-                    transition: lqip ? 'opacity .45s ease-in-out' : undefined,
-                  }}
+                  style={lqip ? { transition: 'opacity .45s ease-in-out' } : undefined}
                 />
               </div>
             </div>
 
-            <aside className="max-w-xl">
-              <p className="font-semibold leading-relaxed text-primary">
-                {description}
-              </p>
-              <p className="mt-3 text-xs font-bold tracking-wider text-gray-500">
-                {data?.extraText ?? 'COMMUNITY ENERGY · EU SUPPORTED'}
-              </p>
-            </aside>
-          </ScrollReveal>
+            <motion.aside
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={fadeSlide}
+              className="max-w-xl"
+            >
+              <p className="font-semibold leading-relaxed text-primary">{description}</p>
+              <p className="mt-3 text-xs font-bold tracking-wider text-gray-500">{extraText}</p>
+            </motion.aside>
+          </div>
         </div>
 
-        {/* error / loading hints */}
-        {loading && (
-          <div className="mt-6 text-sm text-gray-500">Loading section content…</div>
-        )}
-        {error && (
-          <div className="mt-6 text-sm text-red-500">
-            Could not load section content from Sanity.
-          </div>
-        )}
+        {loading && <div className="mt-6 text-sm text-gray-500">{t('loading')}</div>}
+        {error && <div className="mt-6 text-sm text-red-500">Could not load section content from Sanity.</div>}
       </div>
     </section>
   );
