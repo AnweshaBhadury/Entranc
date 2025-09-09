@@ -9,13 +9,13 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       description: "Main heading displayed in the hero section",
     }),
     defineField({
       name: "subheading",
       title: "Subheading",
-      type: "text",
+      type: "localeText",
       description: "Optional subheading or tagline",
     }),
     defineField({
@@ -28,14 +28,14 @@ export default defineType({
     defineField({
       name: "scrollIndicatorText",
       title: "Scroll Indicator Text",
-      type: "string",
+      type: "localeString",
       initialValue: "Scroll",
-      description: "Text displayed next to the down arrow",
+      description: "localeText displayed next to the down arrow",
     }),
     defineField({
       name: "scrollIconType",
       title: "Scroll Icon",
-      type: "string",
+      type: "localeString",
       options: {
         list: [
           { title: "Arrow Down", value: "arrowDown" },

@@ -36,6 +36,9 @@ import author from "./BlogPageSchema/author";
 
 import Footer from "./Footer";
 import contactSubmit from "./contactSubmit";
+import localeString from "./objects/localeString";
+import localeText from "./objects/localeText";
+
 
 
 export const schemaTypes = [
@@ -78,6 +81,9 @@ export const schemaTypes = [
 
   //contact submit
   contactSubmit,
+
+  localeString,
+  localeText,
 
   //footer
   Footer
