@@ -8,25 +8,25 @@ export default defineType({
     defineField({
       name: "label",
       title: "Label / Intro",
-      type: "string",
+      type: "localeString",
       description: "Small text above heading, e.g., 'EnTranC'",
     }),
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       description: "Main heading of the transition section",
     }),
     defineField({
       name: "description",
       title: "Description",
-      type: "text",
+      type: "localeText",
       description: "Main paragraph describing the section",
     }),
     defineField({
       name: "ctaText",
       title: "CTA Button Text",
-      type: "string",
+      type: "localeString",
     }),
     defineField({
       name: "ctaLink",
@@ -43,7 +43,7 @@ export default defineType({
     defineField({
       name: "extraText",
       title: "Extra Text / Footer",
-      type: "string",
+      type: "localeString",
       description: "Optional small text below the image, e.g., 'COMMUNITY ENERGY · EU SUPPORTED'",
     }),
   ],

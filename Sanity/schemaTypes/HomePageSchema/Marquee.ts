@@ -15,15 +15,15 @@ export default defineType({
           type: "object",
           fields: [
             defineField({
-              name: "text",
-              title: "Text",
-              type: "string",
+              name: "localeText",
+              title: "localeText",
+              type: "localeString",
               description: "Marquee text (e.g., Power to the People.)",
             }),
             defineField({
               name: "iconType",
               title: "Icon Type",
-              type: "string",
+              type: "localeString",
               options: {
                 list: [
                   { title: "User Group (HiOutlineUserGroup)", value: "userGroup" },

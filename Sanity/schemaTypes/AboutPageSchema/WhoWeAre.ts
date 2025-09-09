@@ -9,7 +9,7 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       initialValue: "Who We Are",
       description: "Main heading of the section",
     }),
@@ -17,7 +17,7 @@ export default defineType({
       name: "paragraphs",
       title: "Paragraphs",
       type: "array",
-      of: [{ type: "text" }],
+      of: [{ type: "localeText" }],
       description: "Add one or more paragraphs describing the organization",
       validation: (Rule) => Rule.min(1).warning("Add at least one paragraph"),
     }),

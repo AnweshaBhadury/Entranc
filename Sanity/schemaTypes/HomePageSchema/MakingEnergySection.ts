@@ -8,27 +8,26 @@ export default defineType({
     defineField({
       name: "title",
       title: "Section Title",
-      type: "string",
+      type: "localeString",
       description: "Main heading of the section",
       // i18n will automatically work if you enabled the plugin globally
     }),
     defineField({
       name: "subtitle",
       title: "Subtitle / Intro Text",
-      type: "string",
+      type: "localeString",
       description: "Small text above the heading",
     }),
     defineField({
       name: "description",
       title: "Description",
-      type: "text",
-      rows: 4,
+      type: "localeText",
       description: "Section description text",
     }),
     defineField({
       name: "buttonText",
       title: "Button Text",
-      type: "string",
+      type: "localeString",
       initialValue: "Read Blogs",
     }),
     defineField({
@@ -49,7 +48,7 @@ export default defineType({
               name: "texts",
               title: "Card Texts",
               type: "array",
-              of: [{ type: "string" }],
+              of: [{ type: "localeString" }],
               description: "Add one or more texts (used for marquee if multiple)",
             }),
             defineField({

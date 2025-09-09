@@ -9,21 +9,21 @@ export default defineType({
     defineField({
       name: "label",
       title: "Label / Intro Text",
-      type: "string",
+      type: "localeString",
       initialValue: "Community Energy Model",
       description: "Small text above the heading",
     }),
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       initialValue: "The Why Behind Us",
       description: "Main heading of the section",
     }),
     defineField({
       name: "description",
       title: "Description",
-      type: "text",
+      type: "localeText",
       description: "Introductory paragraph under the heading",
     }),
     defineField({
@@ -34,7 +34,7 @@ export default defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "text", title: "Text", type: "text" }),
+            defineField({ name: "localeText", title: "localeText", type: "localeText" }),
           ],
         },
       ],

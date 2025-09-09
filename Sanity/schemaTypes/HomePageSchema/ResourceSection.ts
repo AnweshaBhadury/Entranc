@@ -8,7 +8,7 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       initialValue: "Community & Resources",
     }),
     defineField({
@@ -20,12 +20,12 @@ export default defineType({
           type: "object",
           name: "resourceCard",
           fields: [
-            defineField({ name: "type", title: "Type", type: "string" }),
-            defineField({ name: "title", title: "Title", type: "string" }),
-            defineField({ name: "description", title: "Description", type: "text" }),
-            defineField({ name: "btnText", title: "Button Text", type: "string" }),
-            defineField({ name: "containerClass", title: "Container CSS Classes", type: "string" }),
-            defineField({ name: "buttonClass", title: "Button CSS Classes", type: "string" }),
+            defineField({ name: "type", title: "Type", type: "localeString" }),
+            defineField({ name: "title", title: "Title", type: "localeString" }),
+            defineField({ name: "description", title: "Description", type: "localeText" }),
+            defineField({ name: "btnText", title: "Button Text", type: "localeString" }),
+            defineField({ name: "containerClass", title: "Container CSS Classes", type: "localeString" }),
+            defineField({ name: "buttonClass", title: "Button CSS Classes", type: "localeString" }),
             defineField({ name: "image", title: "Image", type: "image", options: { hotspot: true } }),
           ],
         },

@@ -9,7 +9,7 @@ export default defineType({
     {
       name: 'title',
       title: 'Title',
-      type: 'string',
+      type: 'localeString',
       validation: (Rule) => Rule.required().min(10).max(120),
     },
     {
@@ -22,7 +22,7 @@ export default defineType({
     {
       name: 'excerpt',
       title: 'Excerpt',
-      type: 'text',
+      type: 'localeText',
       description:
         'Short summary for listings and meta description (approx 120-160 chars)',
       validation: (Rule) => Rule.max(200),
@@ -85,7 +85,7 @@ export default defineType({
       type: 'image',
       options: { hotspot: true },
       fields: [
-        { name: 'alt', title: 'Alt text', type: 'string', validation: (Rule) => Rule.required() },
+        { name: 'alt', title: 'Alt text', type: 'localeString', validation: (Rule) => Rule.required() },
         { name: 'caption', title: 'Caption', type: 'string' },
       ],
     },

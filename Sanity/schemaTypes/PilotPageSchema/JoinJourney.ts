@@ -9,7 +9,7 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string", // multilingual automatically
+      type: "localeString", // multilingual automatically
       initialValue: "Join Our Journey",
       description: "Main heading of the section",
     }),
@@ -22,20 +22,20 @@ export default defineType({
     defineField({
       name: "investmentInfo",
       title: "Investment Info",
-      type: "string", // multilingual
+      type: "localeString", // multilingual
       initialValue: "Minimum investment: €250",
       description: "Short info about the investment",
     }),
     defineField({
       name: "emailPlaceholder",
       title: "Email Input Placeholder",
-      type: "string", // multilingual
+      type: "localeString", // multilingual
       initialValue: "Enter Your Email",
     }),
     defineField({
       name: "buttonText",
       title: "Submit Button Text",
-      type: "string", // multilingual
+      type: "localeString", // multilingual
       initialValue: "Submit",
     }),
     defineField({

@@ -9,20 +9,20 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       initialValue: "Get in Touch",
       description: "Main heading of the hero section",
     }),
     defineField({
       name: "subheading",
       title: "Subheading",
-      type: "string",
+      type: "localeString",
       description: "Optional subheading under the main heading",
     }),
     defineField({
       name: "scrollIndicatorText",
       title: "Scroll Indicator Text",
-      type: "string",
+      type: "localeString",
       initialValue: "Scroll",
     }),
     defineField({

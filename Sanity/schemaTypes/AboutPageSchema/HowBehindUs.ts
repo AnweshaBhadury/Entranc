@@ -9,13 +9,13 @@ export default defineType({
     defineField({
       name: "introLabel",
       title: "Intro Label",
-      type: "string",
+      type: "localeString",
       description: "Text above the heading, e.g., '💡 Our Values & Team'",
     }),
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       description: "Main heading of the section, e.g., 'The How Behind Us'",
     }),
     defineField({
@@ -31,13 +31,12 @@ export default defineType({
             defineField({
               name: "title",
               title: "Tile Title",
-              type: "string",
+              type: "localeString",
             }),
             defineField({
               name: "description",
               title: "Tile Description",
-              type: "text",
-              rows: 3,
+              type: "localeText",
             }),
             defineField({
               name: "special",

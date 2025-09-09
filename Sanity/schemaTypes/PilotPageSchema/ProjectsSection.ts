@@ -9,7 +9,7 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       initialValue: "Projects",
     }),
     defineField({
@@ -21,14 +21,14 @@ export default defineType({
           type: "object",
           name: "project",
           fields: [
-            defineField({ name: "status", title: "Status", type: "string" }),
-            defineField({ name: "title", title: "Title", type: "string" }),
+            defineField({ name: "status", title: "Status", type: "localeString" }),
+            defineField({ name: "title", title: "Title", type: "localeString" }),
             defineField({ name: "description", title: "Description", type: "text" }),
-            defineField({ name: "partners", title: "Partners", type: "string" }),
+            defineField({ name: "partners", title: "Partners", type: "localeString" }),
             defineField({
               name: "iconType",
               title: "Icon Type",
-              type: "string",
+              type: "localeString",
               options: {
                 list: [
                   { title: "FaWind", value: "FaWind" },
@@ -42,10 +42,10 @@ export default defineType({
               type: "image",
               options: { hotspot: true },
             }),
-            defineField({ name: "customContainerClass", title: "Custom Container Class", type: "string" }),
-            defineField({ name: "partnerBgClass", title: "Partner Background Class", type: "string" }),
-            defineField({ name: "buttonPrimaryClass", title: "Primary Button Class", type: "string" }),
-            defineField({ name: "buttonSecondaryClass", title: "Secondary Button Class", type: "string" }),
+            defineField({ name: "customContainerClass", title: "Custom Container Class", type: "localeString" }),
+            defineField({ name: "partnerBgClass", title: "Partner Background Class", type: "localeString" }),
+            defineField({ name: "buttonPrimaryClass", title: "Primary Button Class", type: "localeString" }),
+            defineField({ name: "buttonSecondaryClass", title: "Secondary Button Class", type: "localeString" }),
           ],
         },
       ],

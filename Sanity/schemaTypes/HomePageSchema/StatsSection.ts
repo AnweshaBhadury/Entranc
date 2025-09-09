@@ -8,20 +8,20 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       initialValue: "Statistics that Speaks For Itself",
     }),
     defineField({
       name: "description",
       title: "Description",
-      type: "text",
+      type: "localeText",
       initialValue:
         "In just a few years, we’re building more than infrastructure — we’re building trust, community, and measurable climate action...",
     }),
     defineField({
       name: "buttonText",
       title: "Button Text",
-      type: "string",
+      type: "localeString",
       initialValue: "Read Blogs",
     }),
     defineField({
@@ -49,12 +49,12 @@ export default defineType({
           name: "blogCard",
           title: "Blog Card",
           fields: [
-            defineField({ name: "title", title: "Title", type: "string" }),
-            defineField({ name: "tag", title: "Tag", type: "string" }),
+            defineField({ name: "title", title: "Title", type: "localeString" }),
+            defineField({ name: "tag", title: "Tag", type: "localeString" }),
             defineField({
               name: "tagColor",
               title: "Tag Color",
-              type: "string",
+              type: "localeString",
               options: {
                 list: [
                   { title: "Sky Blue background with Sky text", value: "bg-s1/20 text-s1" },
@@ -87,15 +87,15 @@ export default defineType({
               type: "image",
               options: { hotspot: true },
             }),
-            defineField({ name: "imageAlt", title: "Image alt text", type: "string" }),
-            defineField({ name: "imageCaption", title: "Image caption", type: "string" }),
+            defineField({ name: "imageAlt", title: "Image alt text", type: "localeString" }),
+            defineField({ name: "imageCaption", title: "Image caption", type: "localeString" }),
 
             defineField({
               name: "statValue",
               title: "card text",
-              type: "string",
+              type: "localeString",
             }),
-            defineField({ name: "ctaText", title: "CTA Text", type: "string" }),
+            defineField({ name: "ctaText", title: "CTA Text", type: "localeString" }),
             defineField({ name: "ctaLink", title: "CTA Link", type: "url" }),
           ],
 

@@ -8,13 +8,12 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
     }),
     defineField({
       name: "subText",
       title: "Sub Text",
-      type: "text",
-      rows: 3,
+      type: "localeText",
     }),
     defineField({
       name: "socialLinks",
@@ -27,7 +26,7 @@ export default defineType({
             defineField({
               name: "platform",
               title: "Platform",
-              type: "string",
+              type: "localeString",
               options: { list: ["Instagram", "Facebook", "Email"] },
             }),
             defineField({
@@ -53,14 +52,14 @@ export default defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "label", title: "Label", type: "string" }),
+            defineField({ name: "label", title: "Label", type: "localeString" }),
             defineField({
               name: "type",
               title: "Field Type",
-              type: "string",
-              options: { list: ["text", "email", "textarea"] },
+              type: "localeString",
+              options: { list: ["localeText", "email", "textarea"] },
             }),
-            defineField({ name: "placeholder", title: "Placeholder", type: "string" }),
+            defineField({ name: "placeholder", title: "Placeholder", type: "localeString" }),
           ],
         },
       ],
@@ -68,11 +67,11 @@ export default defineType({
     defineField({
       name: "buttonText",
       title: "Submit Button Text",
-      type: "string",
+      type: "localeString",
       initialValue: "Submit",
     }),
     // ✅ Submissions array
-    defineField({
+    /*defineField({
       name: "submissions",
       title: "Form Submissions",
       type: "array",
@@ -82,7 +81,7 @@ export default defineType({
           fields: [
             defineField({ name: "name", title: "Name", type: "string" }),
             defineField({ name: "email", title: "Email", type: "string" }),
-            defineField({ name: "message", title: "Message", type: "text" }),
+            defineField({ name: "message", title: "Message", type: "localeText" }),
             defineField({
               name: "submittedAt",
               title: "Submitted At",
@@ -92,6 +91,6 @@ export default defineType({
           ],
         },
       ],
-    }),
+    }),*/
   ],
 });

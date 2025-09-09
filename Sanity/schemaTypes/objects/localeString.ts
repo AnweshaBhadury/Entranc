@@ -7,6 +7,6 @@ export default defineType({
   type: "object",
   fields: [
     defineField({ name: "en", title: "English", type: "string" }),
-    defineField({ name: "du", title: "Dutch", type: "string" }), // your locale codes
+    defineField({ name: "du", title: "Deutsch", type: "string" }), // your locale codes
   ],
 });

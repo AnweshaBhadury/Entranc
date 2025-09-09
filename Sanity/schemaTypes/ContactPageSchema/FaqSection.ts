@@ -9,7 +9,7 @@ export default {
     {
       name: 'heading',
       title: 'Heading',
-      type: 'string',
+      type: 'localeString',
       description: 'Main heading for the FAQ section',
       validation: (Rule: Rule) => Rule.required(),
     },
@@ -26,7 +26,7 @@ export default {
             {
               name: 'question',
               title: 'Question',
-              type: 'string',
+              type: 'localeString',
               validation: (Rule: Rule) => Rule.required(),
             },
             {

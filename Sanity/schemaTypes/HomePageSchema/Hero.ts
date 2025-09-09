@@ -8,19 +8,19 @@ export default defineType({
     defineField({
       name: "heading",
       title: "Heading",
-      type: "string",
+      type: "localeString",
       description: "Main heading displayed in the hero section",
     }),
     defineField({
       name: "subheading",
       title: "Subheading",
-      type: "text",
+      type: "localeText",
       description: "Optional subheading or tagline",
     }),
     defineField({
       name: "primaryButtonText",
       title: "Primary Button Text",
-      type: "string",
+      type: "localeString",
     }),
     defineField({
       name: "primaryButtonLink",
@@ -30,7 +30,7 @@ export default defineType({
     defineField({
       name: "secondaryButtonText",
       title: "Secondary Button Text",
-      type: "string",
+      type: "localeString",
     }),
     defineField({
       name: "secondaryButtonLink",
