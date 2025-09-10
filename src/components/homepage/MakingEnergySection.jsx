@@ -163,10 +163,10 @@ const MakingEnergySection = () => {
     return () => clearInterval(id);
   }, [cards.length]);
 
-  const title = sectionData?.title ?? t('title');
-  const subtitle = sectionData?.subtitle ?? t('subtitle');
-  const description = sectionData?.description ?? t('description');
-  const buttonText = sectionData?.buttonText ?? t('buttonText');
+  const title = sectionData?.title?.[language] ?? t('title');
+  const subtitle = sectionData?.subtitle?.[language] ?? t('subtitle');
+  const description = sectionData?.description?.[language] ?? t('description');
+  const buttonText = sectionData?.buttonText?.[language] ?? t('buttonText');
 
   return (
     <section className="relative slanted-divider py-20 px-phone md:px-tab lg:px-desktop bg-white" aria-labelledby="making-energy-heading">

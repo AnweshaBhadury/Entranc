@@ -179,10 +179,10 @@ const ResourcesSection = () => {
               return {
                 key,
                 type: "content",
-                title: c.title ?? fallback[idx]?.title ?? "Title",
-                description: c.description ?? fallback[idx]?.description ?? "",
-                btnText: c.btnText ?? fallback[idx]?.btnText ?? "Learn More",
-                btnLink: c.btnLink ?? fallback[idx]?.btnLink ?? "#",
+                title: c.title?.[language] ?? fallback[idx]?.title ?? "Title",
+                description: c.description?.[language] ?? fallback[idx]?.description ?? "",
+                btnText: c.btnText?.[language] ?? fallback[idx]?.btnText ?? "Learn More",
+                btnLink: c.btnLink?.[language] ?? fallback[idx]?.btnLink ?? "#",
                 containerClass: c.containerClass ?? fallback[idx]?.containerClass ?? "",
                 buttonClass: c.buttonClass ?? fallback[idx]?.buttonClass ?? "",
               };

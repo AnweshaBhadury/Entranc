@@ -23,13 +23,13 @@ export default defineType({
             defineField({
               name: "iconType",
               title: "Icon Type",
-              type: "localeString",
+              type: "string",   // ✅ should be "string", not localeString
               options: {
                 list: [
                   { title: "User Group (HiOutlineUserGroup)", value: "userGroup" },
                   { title: "Bulb Image", value: "bulb" },
                 ],
-                layout: "radio",
+                layout: "dropdown", // 👈 dropdown instead of radio
               },
               description:
                 "Choose whether this item should be a user-group icon or a bulb image",

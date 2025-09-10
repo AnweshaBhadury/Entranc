@@ -85,11 +85,11 @@ const Hero = () => {
   const bgImageUrl = hero?.backgroundImageUrl ? hero.backgroundImageUrl : hero1;
   const bgAlt = hero?.backgroundImageAlt ?? t('bgAlt');
 
-  const heading = hero?.heading ?? t('heading');
-  const subheading = hero?.subheading ?? t('subheading');
-  const primaryText = hero?.primaryButtonText ?? t('primaryText');
+  const heading = hero?.heading?.[language] ?? t('heading');
+  const subheading = hero?.subheading?.[language] ?? t('subheading');
+  const primaryText = hero?.primaryButtonText?.[language] ?? t('primaryText');
   const primaryLink = safeHref(hero?.primaryButtonLink ?? t('primaryLink'));
-  const secondaryText = hero?.secondaryButtonText ?? t('secondaryText');
+  const secondaryText = hero?.secondaryButtonText?.[language] ?? t('secondaryText');
   const secondaryLink = safeHref(hero?.secondaryButtonLink ?? t('secondaryLink'));
 
   return (
