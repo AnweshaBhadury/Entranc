@@ -64,9 +64,9 @@ const AboutHero = () => {
 
   const bgImageUrl = hero?.backgroundImageUrl ?? hero2Fallback;
   const bgAlt = hero?.backgroundImageAlt ?? t('bgAlt');
-  const heading = hero?.heading ?? t('heading');
-  const subheading = hero?.subheading ?? t('subheading');
-  const scrollText = hero?.scrollIndicatorText ?? t('scroll');
+  const heading = hero?.heading[language]?? t('heading');
+  const subheading = hero?.subheading[language] ?? t('subheading');
+  const scrollText = hero?.scrollIndicatorText[language] ?? t('scroll');
   return (
     <section className="h-[90vh] w-full relative flex items-center justify-center text-white rounded-3xl overflow-hidden">
       <div className="absolute inset-0 bg-black/50 z-10" />
