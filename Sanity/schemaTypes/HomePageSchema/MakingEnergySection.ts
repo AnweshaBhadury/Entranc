@@ -45,6 +45,12 @@ export default defineType({
               options: { hotspot: true },
             }),
             defineField({
+              name: "cardUrlRedirect",
+              title: "Card Redirect URL",
+              type: "url",
+              description: "Where should this card redirect when clicked?"
+            }),
+            defineField({
               name: "texts",
               title: "Card Texts",
               type: "array",

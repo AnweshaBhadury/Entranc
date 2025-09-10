@@ -12,6 +12,7 @@ import useLanguage from "../../hook/useLanguage";
 import comm1 from "../../assets/comm1.jpg";
 import comm2 from "../../assets/comm2.jpeg";
 import comm5 from "../../assets/comm5.jpg";
+import { Link } from "react-router-dom";
 
 const GROQ_QUERY = `*[_type == "home"][0].MakingEnergySection{
   title,
@@ -22,14 +23,15 @@ const GROQ_QUERY = `*[_type == "home"][0].MakingEnergySection{
     "imageUrl": image.asset->url,
     "imageAlt": image.alt,
     texts,
-    hasMarquee
+    hasMarquee,
+    cardUrlRedirect
   }
 }`;
 
 const fallbackCardsDefault = [
-  { key: "c1", imageUrl: comm1, imageAlt: "Community image 1", texts: ["Making Energy"], hasMarquee: false },
-  { key: "c2", imageUrl: comm2, imageAlt: "Community image 2", texts: ["Making Energy Communities", "Energy Communities Work...💡"], hasMarquee: true },
-  { key: "c3", imageUrl: comm5, imageAlt: "Community image 3", texts: ["Communities Work..."], hasMarquee: false },
+  { key: "c1", imageUrl: comm1, imageAlt: "Community image 1", texts: ["Making Energy"], hasMarquee: false, cardUrlRedirect: "#" },
+  { key: "c2", imageUrl: comm2, imageAlt: "Community image 2", texts: ["Making Energy Communities", "Energy Communities Work...💡"], hasMarquee: true, cardUrlRedirect: "#" },
+  { key: "c3", imageUrl: comm5, imageAlt: "Community image 3", texts: ["Communities Work..."], hasMarquee: false, cardUrlRedirect: "#" },
 ];
 
 // localized fallbacks
@@ -56,30 +58,41 @@ const localizedFallbacks = {
   }
 };
 
-const EnergyCard = ({ card }) => (
-  <article className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl" role="group" aria-label={card.ariaLabel ?? card.texts?.[0] ?? "Community card"}>
-    <img
-      src={card.imageUrl}
-      alt={card.imageAlt || (card.texts?.[0] ?? "Community image")}
-      className="w-full h-full object-cover"
-      loading="lazy"
-    />
-    <div className="absolute inset-0 bg-black/20" />
-    <div className="absolute inset-0 bg-grid-pattern bg-grid-size opacity-10" />
-    <div className="absolute bottom-4 left-0 w-full overflow-hidden">
-      <div className={card.hasMarquee ? "animate-marquee whitespace-nowrap" : "px-4"}>
-        <p className="inline-block font-bold text-lg bg-s2 text-primary px-2 py-1 rounded">
-          {card.texts?.[0] ?? "Making Energy"}
-        </p>
-        {card.hasMarquee && card.texts?.slice(1).map((t, i) => (
-          <p key={i} className="inline-block font-bold text-lg bg-s2 text-primary px-2 py-1 rounded ml-4">
-            {t}
-          </p>
-        ))}
-      </div>
-    </div>
-  </article>
-);
+const EnergyCard = ({ card }) => {
+
+  const [language] = useLanguage();
+  useEffect( ()=>{
+    console.log(card)
+  },[])
+
+
+  return (
+    <a href={card.cardUrlRedirect} className="cursor-pointer" target="_blank">
+      <article className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl" role="group" aria-label={card.ariaLabel ?? card.texts?.[0]?.[language] ?? "Community card"}>
+        <img
+          src={card.imageUrl}
+          alt={card.imageAlt || (card.texts?.[0]?.[language] ?? "Community image")}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-grid-pattern bg-grid-size opacity-10" />
+        <div className="absolute bottom-4 left-0 w-full overflow-hidden">
+          <div className={card.hasMarquee ? "animate-marquee whitespace-nowrap" : "px-4"}>
+            <p className="inline-block font-bold text-lg bg-s2 text-primary px-2 py-1 rounded">
+              {card.texts?.[0]?.[language] ?? "Making Energy"}
+            </p>
+            {card.hasMarquee && card.texts?.slice(1).map((t, i) => (
+              <p key={i} className="inline-block font-bold text-lg bg-s2 text-primary px-2 py-1 rounded ml-4">
+                {t?.[language]}
+              </p>
+            ))}
+          </div>
+        </div>
+      </article>
+    </a>)
+}
+
 
 const fadeSlide = {
   hidden: { opacity: 0, x: 30 },
@@ -113,16 +126,18 @@ const MakingEnergySection = () => {
           description: data?.description ?? fallback.description,
           buttonText: data?.buttonText ?? fallback.buttonText,
         };
+       
 
         // map sanity cards (if any) to normalized shape
         const sanityCards = Array.isArray(data?.cards) && data.cards.length
           ? data.cards.map((c, idx) => ({
-              key: c._key ?? `sanity-${idx}`,
-              imageUrl: c.imageUrl ?? (fallback.cards[idx]?.imageUrl),
-              imageAlt: c.imageAlt ?? (fallback.cards[idx]?.imageAlt ?? `card-${idx + 1}`),
-              texts: Array.isArray(c.texts) && c.texts.length ? c.texts : (fallback.cards[idx]?.texts ?? ["Making Energy"]),
-              hasMarquee: !!c.hasMarquee,
-            }))
+            key: c._key ?? `sanity-${idx}`,
+            cardUrlRedirect: c.cardUrlRedirect ?? (fallback.cards[idx]?.cardUrlRedirect),
+            imageUrl: c.imageUrl ?? (fallback.cards[idx]?.imageUrl),
+            imageAlt: c.imageAlt ?? (fallback.cards[idx]?.imageAlt ?? `card-${idx + 1}`),
+            texts: Array.isArray(c.texts) && c.texts.length ? c.texts : (fallback.cards[idx]?.texts ?? ["Making Energy"]),
+            hasMarquee: !!c.hasMarquee,
+          }))
           : fallback.cards;
 
         setSectionData(final);

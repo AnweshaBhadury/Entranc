@@ -168,9 +168,9 @@ const RoadmapSection = () => {
         if (!mounted) return;
 
         const finalSection = {
-          title: data?.title ?? fallback.title,
-          description: data?.description ?? fallback.description,
-          buttonText: data?.buttonText ?? fallback.buttonText,
+          title: data?.title?.[language] ?? fallback.title,
+          description: data?.description?.[language]  ?? fallback.description,
+          buttonText: data?.buttonText?.[language]  ?? fallback.buttonText,
           buttonLink: data?.buttonLink ?? fallback.buttonLink,
         };
 
@@ -178,9 +178,9 @@ const RoadmapSection = () => {
           ? data.cards.map((c, idx) => ({
               id: c._key ?? `sanity-${idx}`,
               number: c.number ?? String(idx + 1),
-              title: c.title ?? (fallback.cards[idx % fallback.cards.length]?.title ?? `Step ${idx + 1}`),
-              content: c.content ?? (fallback.cards[idx % fallback.cards.length]?.content ?? ""),
-              partner: c.partner ?? (fallback.cards[idx % fallback.cards.length]?.partner ?? ""),
+              title: c.title?.[language]  ?? (fallback.cards[idx % fallback.cards.length]?.title ?? `Step ${idx + 1}`),
+              content: c.content?.[language]  ?? (fallback.cards[idx % fallback.cards.length]?.content ?? ""),
+              partner: c.partner?.[language]  ?? (fallback.cards[idx % fallback.cards.length]?.partner ?? ""),
               containerClass: c.containerClass ?? (fallback.cards[idx % fallback.cards.length]?.containerClass ?? ""),
               titleClass: c.titleClass ?? (fallback.cards[idx % fallback.cards.length]?.titleClass ?? ""),
               numberClass: c.numberClass ?? (fallback.cards[idx % fallback.cards.length]?.numberClass ?? ""),

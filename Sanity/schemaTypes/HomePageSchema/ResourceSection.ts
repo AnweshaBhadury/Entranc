@@ -51,7 +51,7 @@ export default defineType({
                 ],
                 layout: "dropdown",
               },
-              validation: (Rule) => Rule.required(),
+             
             }),
 
             defineField({
@@ -68,7 +68,7 @@ export default defineType({
                 ],
                 layout: "dropdown",
               },
-              validation: (Rule) => Rule.required(),
+             
             }),
 
 

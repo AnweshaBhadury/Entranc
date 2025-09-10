@@ -6,8 +6,8 @@ export default defineType({
   type: "object",
   fields: [
     defineField({
-      name: "heading",
-      title: "Heading",
+      name: "title",
+      title: "title",
       type: "localeString",
       initialValue: "Work Package Roadmap",
     }),
@@ -38,14 +38,70 @@ export default defineType({
           type: "object",
           name: "roadmapCard",
           fields: [
-            defineField({ name: "number", title: "Number", type: "localeString", initialValue: "1" }),
-            defineField({ name: "title", title: "Title", type: "localeString", initialValue: "Card Title" }),
-            defineField({ name: "content", title: "Content", type: "localeText", initialValue: "Card content goes here." }),
-            defineField({ name: "partner", title: "Partner", type: "localeString", initialValue: "Partner Name" }),
-            defineField({ name: "containerClass", title: "Container CSS Classes", type: "localeString", initialValue: "bg-s2 text-primary" }),
-            defineField({ name: "titleClass", title: "Title CSS Classes", type: "localeString", initialValue: "text-primary" }),
-            defineField({ name: "numberClass", title: "Number CSS Classes", type: "localeString", initialValue: "text-primary/20" }),
-            defineField({ name: "partnerClass", title: "Partner CSS Classes", type: "localeString", initialValue: "text-primary" }),
+            defineField({ name: "number", title: "Number", type: "string"}),
+            defineField({ name: "title", title: "Title", type: "localeString"}),
+            defineField({ name: "content", title: "Content", type: "localeText" }),
+            defineField({ name: "partner", title: "Partner", type: "localeString"}),
+            defineField({
+              name: "containerClass",
+              title: "Container Style",
+              type: "string",
+              initialValue: "bg-s2 text-primary",
+              options: {
+                list: [
+                  { title: "Light Section (Soft Gray background, Dark Text)", value: "bg-s2 text-primary" },
+                  { title: "White Section (White background with Soft Gray Border)", value: "bg-white border-2 border-s2" },
+                ],
+                layout: "dropdown",
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+
+            defineField({
+              name: "titleClass",
+              title: "Title Style",
+              type: "string",
+              initialValue: "text-primary",
+              options: {
+                list: [
+                  { title: "Primary Title (Green Text)", value: "text-primary" },
+                  { title: "Secondary Title (Soft Gray Text)", value: "text-s2" },
+                ],
+                layout: "dropdown",
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+
+            defineField({
+              name: "numberClass",
+              title: "Number Style",
+              type: "string",
+              initialValue: "text-primary/20",
+              options: {
+                list: [
+                  { title: "Primary Number (Light Green, 20% opacity)", value: "text-primary/20" },
+                  { title: "Secondary Number (Light Gray, 20% opacity)", value: "text-s2/20" },
+                ],
+                layout: "dropdown",
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+
+            defineField({
+              name: "partnerClass",
+              title: "Partner Name Style",
+              type: "string",
+              initialValue: "text-primary",
+              options: {
+                list: [
+                  { title: "Primary Partner (Green Text)", value: "text-primary" },
+                  { title: "Secondary Partner (Gray Text)", value: "text-s2" },
+                ],
+                layout: "dropdown",
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+
           ],
         },
       ],
