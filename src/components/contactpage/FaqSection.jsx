@@ -41,12 +41,32 @@ const itemAnim = {
 
 const FaqSection = () => {
   const [language] = useLanguage();
+
   const tFallback = (key) => {
     const cur = localizedFallbacks[language] ?? localizedFallbacks.en;
     return cur[key];
   };
 
-  const [data, setData] = useState(() => tFallback('faqs') ? { heading: tFallback('heading'), faqs: tFallback('faqs') } : { heading: 'FAQ', faqs: [] });
+  // helper to extract localized string (handles strings or { en, du } objects)
+  const extractLocale = (field, fallback = '') => {
+    if (typeof field === 'string') return field;
+    if (!field || typeof field !== 'object') return fallback;
+    // Prefer exact language, then english, then any string value
+    return (field[language] ?? field.en ?? Object.values(field).find(v => typeof v === 'string') ?? fallback);
+  };
+
+  // initial state - normalized to { heading: string, faqs: [{ _key, question, answer }] }
+  const [data, setData] = useState(() => {
+    const fallback = tFallback('faqs') ?? [];
+    const heading = tFallback('heading') ?? 'FAQ';
+    // ensure fallback faqs are in normalized shape
+    const faqs = (fallback || []).map((f, i) => ({
+      _key: f._key ?? `fb-${i}`,
+      question: f.question ?? f.q ?? f.questionText ?? (f?.q ?? `Question ${i + 1}`),
+      answer: f.answer ?? f.a ?? '',
+    }));
+    return { heading, faqs };
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -55,14 +75,37 @@ const FaqSection = () => {
         const res = await client.fetch(FAQ_QUERY);
         if (!mounted) return;
 
-        const heading = res?.heading ?? tFallback('heading');
-        const faqs = Array.isArray(res?.faqs) && res.faqs.length ? res.faqs : tFallback('faqs');
+        // heading: could be localized object or string
+        const headingRaw = res?.heading ?? null;
+        const heading = extractLocale(headingRaw, tFallback('heading'));
+
+        // faqs: normalize each entry into { _key, question: string, answer: string }
+        let faqsRaw = Array.isArray(res?.faqs) && res.faqs.length ? res.faqs : tFallback('faqs');
+        if (!Array.isArray(faqsRaw)) faqsRaw = [];
+
+        const faqs = faqsRaw.map((it, idx) => {
+          // Sanity may return question/answer as nested objects, or already as strings.
+          const questionField = it?.question ?? it?.q ?? it?.questionText ?? '';
+          const answerField = it?.answer ?? it?.a ?? it?.answerText ?? '';
+          return {
+            _key: it?._key ?? `faq-${idx}`,
+            question: extractLocale(questionField, `Question ${idx + 1}`),
+            answer: extractLocale(answerField, ''),
+          };
+        });
 
         setData({ heading, faqs });
       } catch (err) {
         if (!mounted) return;
         // Fallback to localized defaults
-        setData({ heading: tFallback('heading'), faqs: tFallback('faqs') });
+        const fallbackHeading = tFallback('heading');
+        const fallbackFaqs = tFallback('faqs') ?? [];
+        const normalized = (fallbackFaqs || []).map((f, i) => ({
+          _key: f._key ?? `fb-${i}`,
+          question: f.question ?? f.q ?? f.questionText ?? `Question ${i + 1}`,
+          answer: f.answer ?? f.a ?? '',
+        }));
+        setData({ heading: fallbackHeading, faqs: normalized });
       }
     })();
     return () => { mounted = false; };
@@ -89,7 +132,7 @@ const FaqSection = () => {
             const a = item?.answer ?? '';
             return (
               <motion.div
-                key={`${q}-${index}`}
+                key={item?._key ?? `${q}-${index}`}
                 variants={itemAnim}
                 initial="hidden"
                 whileInView="show"

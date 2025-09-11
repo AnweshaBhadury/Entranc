@@ -32,17 +32,12 @@ export default {
             {
               name: 'answer',
               title: 'Answer',
-              type: 'text',
+              type: 'localeText',
               rows: 4,
               validation: (Rule: Rule) => Rule.required(),
             },
           ],
-          preview: {
-            select: {
-              title: 'question',
-              subtitle: 'answer',
-            },
-          },
+          
         },
       ],
     },

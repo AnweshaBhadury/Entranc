@@ -64,9 +64,9 @@ const ContactHero = () => {
   const t = (key) => (translations[language] && translations[language][key]) || translations.en[key];
 
   // derive final displayed values: prefer Sanity -> localized translations -> static fallback constants
-  const heading = heroRaw?.heading ?? t('heading');
-  const subheading = heroRaw?.subheading ?? t('subheading');
-  const scrollIndicatorText = heroRaw?.scrollIndicatorText ?? t('scroll');
+  const heading = heroRaw?.heading?.[language] ?? t('heading');
+  const subheading = heroRaw?.subheading?.[language] ?? t('subheading');
+  const scrollIndicatorText = heroRaw?.scrollIndicatorText?.[language] ?? t('scroll');
   const backgroundImageUrl = heroRaw?.backgroundImageUrl ?? heroFallback;
   const backgroundImageAlt = heroRaw?.backgroundImageAlt ?? t('bgAlt');
 

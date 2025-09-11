@@ -26,8 +26,18 @@ export default defineType({
             defineField({
               name: "platform",
               title: "Platform",
-              type: "localeString",
-              options: { list: ["Instagram", "Facebook", "Email"] },
+              type: "string",
+              description: "Select the platform (used in UI and code).",
+              options: {
+                list: [
+                  { title: "Instagram", value: "instagram" },
+                  { title: "Facebook", value: "facebook" },
+                  { title: "Email", value: "email" },
+                ],
+                layout: "dropdown",
+              },
+              initialValue: "instagram",
+              validation: (Rule) => Rule.required(),
             }),
             defineField({
               name: "url",
@@ -43,26 +53,6 @@ export default defineType({
       title: "Google Map Embed URL",
       type: "url",
       description: "Copy the iframe src URL from Google Maps",
-    }),
-    defineField({
-      name: "formFields",
-      title: "Form Fields",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            defineField({ name: "label", title: "Label", type: "localeString" }),
-            defineField({
-              name: "type",
-              title: "Field Type",
-              type: "localeString",
-              options: { list: ["localeText", "email", "textarea"] },
-            }),
-            defineField({ name: "placeholder", title: "Placeholder", type: "localeString" }),
-          ],
-        },
-      ],
     }),
     defineField({
       name: "buttonText",

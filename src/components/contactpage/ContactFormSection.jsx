@@ -11,13 +11,12 @@ const GROQ_QUERY = `*[_type == "contact"][0].ContactFormSection{
   subText,
   socialLinks[]{ platform, url },
   mapEmbedUrl,
-  formFields[]{ label, type, placeholder },
   buttonText
 }`;
 
 const fadeSlide = {
   hidden: { opacity: 0, x: 50 },
-  show:   { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 // Localized fallbacks for English + German
@@ -32,6 +31,7 @@ const localizedFallbacks = {
     ],
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2685.398625232924!2d11.25522801563303!3d47.69629897919098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479cf53610991307%3A0x253900971841a141!2sBavaria!5e0!3m2!1sen!2sde!4v1678283123456!5m2!1sen!2sde",
+    // canonical form fields (we always use these now)
     formFields: [
       { label: "Name", type: "text", placeholder: "Your Name" },
       { label: "Email", type: "email", placeholder: "Your Email" },
@@ -56,7 +56,7 @@ const localizedFallbacks = {
     formFields: [
       { label: "Name", type: "text", placeholder: "Ihr Name" },
       { label: "Email", type: "email", placeholder: "Ihre E-Mail" },
-      { label: "Message", type: "textarea", placeholder: "Ihre Nachricht" },
+      { label: "Nachricht", type: "textarea", placeholder: "Ihre Nachricht" },
     ],
     buttonText: "Absenden",
     submittingText: "Wird gesendet...",
@@ -64,6 +64,29 @@ const localizedFallbacks = {
     fillAllFields: "Bitte füllen Sie alle Felder aus.",
     submitFailed: "Senden fehlgeschlagen. Bitte später erneut versuchen.",
   },
+};
+
+/**
+ * Localize helper for Sanity locale objects.
+ * - If value is string => return it
+ * - If object with language keys => return field[lang] || field.en || first string value
+ */
+const localize = (field, language) => {
+  if (field === null || field === undefined) return "";
+  if (typeof field === "string") return field;
+  if (typeof field === "object") {
+    if (language && Object.prototype.hasOwnProperty.call(field, language)) {
+      const val = field[language];
+      if (typeof val === "string" && val.trim() !== "") return val;
+    }
+    if (Object.prototype.hasOwnProperty.call(field, "en") && typeof field.en === "string") {
+      return field.en;
+    }
+    for (const k of Object.keys(field)) {
+      if (typeof field[k] === "string" && field[k].trim() !== "") return field[k];
+    }
+  }
+  return "";
 };
 
 const ContactFormSection = () => {
@@ -93,15 +116,17 @@ const ContactFormSection = () => {
         const res = await client.fetch(GROQ_QUERY);
         if (!mounted) return;
 
-        // prefer Sanity -> localized fallback
+        // prefer Sanity -> localized fallback (note: we intentionally do not ask Sanity for formFields)
         const fallback = localizedFallbacks[language] ?? localizedFallbacks.en;
         const finalData = {
-          heading: res?.heading ?? fallback.heading,
-          subText: res?.subText ?? fallback.subText,
-          socialLinks: Array.isArray(res?.socialLinks) && res.socialLinks.length ? res.socialLinks : fallback.socialLinks,
+          heading: localize(res?.heading, language) || fallback.heading,
+          subText: localize(res?.subText, language) || fallback.subText,
+          socialLinks:
+            Array.isArray(res?.socialLinks) && res.socialLinks.length ? res.socialLinks : fallback.socialLinks,
           mapEmbedUrl: res?.mapEmbedUrl ?? fallback.mapEmbedUrl,
-          formFields: Array.isArray(res?.formFields) && res.formFields.length ? res.formFields : fallback.formFields,
-          buttonText: res?.buttonText ?? fallback.buttonText,
+          // we always use local canonical formFields from fallback (omitted from GROQ)
+          formFields: fallback.formFields,
+          buttonText: localize(res?.buttonText, language) || fallback.buttonText,
         };
 
         setData(finalData);
@@ -137,7 +162,9 @@ const ContactFormSection = () => {
       }
     }
     fetchData();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [language]);
 
   const heading = data?.heading ?? tFallback("heading");
@@ -175,9 +202,10 @@ const ContactFormSection = () => {
       return;
     }
 
-    const name = values.name ?? values['your name'] ?? values[requiredKeys[0]] ?? "";
-    const email = values.email ?? values['your email'] ?? "";
-    const message = values.message ?? values['your message'] ?? values[requiredKeys[requiredKeys.length - 1]] ?? "";
+    const name = values.name ?? values["your name"] ?? values[requiredKeys[0]] ?? "";
+    const email = values.email ?? values["your email"] ?? "";
+    const message =
+      values.message ?? values["your message"] ?? values[requiredKeys[requiredKeys.length - 1]] ?? "";
 
     try {
       // submitContact(name, email, message) is expected to create a contact document in Sanity
@@ -185,7 +213,9 @@ const ContactFormSection = () => {
       setSuccess(true);
       // reset form
       const resetData = {};
-      requiredKeys.forEach((k) => { resetData[k] = ""; });
+      requiredKeys.forEach((k) => {
+        resetData[k] = "";
+      });
       setFormData(resetData);
     } catch (err) {
       console.error("Submit error:", err);
@@ -198,7 +228,11 @@ const ContactFormSection = () => {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <section className="relative py-20 px-phone md:px-tab lg:px-desktop bg-bg-lightyellow rounded-3xl mt-10 overflow-hidden" id="scroll-contact" aria-labelledby="contact-form-heading">
+    <section
+      className="relative py-20 px-phone md:px-tab lg:px-desktop bg-bg-lightyellow rounded-3xl mt-10 overflow-hidden"
+      id="scroll-contact"
+      aria-labelledby="contact-form-heading"
+    >
       <div className="absolute inset-0 flex items-center justify-center text-s2/10 z-0 pointer-events-none">
         {/* decorative */}
         <svg width="0" height="0" aria-hidden="true" focusable="false" />
@@ -237,9 +271,7 @@ const ContactFormSection = () => {
             {socialLinks.map((link, idx) => {
               const platform = (link.platform || "").toLowerCase();
               const Icon =
-                platform.includes("instagram") ? FaInstagram :
-                platform.includes("facebook") ? FaFacebook :
-                FaEnvelope;
+                platform.includes("instagram") ? FaInstagram : platform.includes("facebook") ? FaFacebook : FaEnvelope;
               const href = sanitizeUrl(link.url);
               return (
                 <a
@@ -283,7 +315,7 @@ const ContactFormSection = () => {
           viewport={{ once: true, amount: 0.25 }}
           className="bg-white p-8 rounded-2xl shadow-lg"
         >
-          <h3 className="text-xl font-bold text-primary mb-8">{tFallback("heading")}</h3>
+          <h3 className="text-xl font-bold text-primary mb-8">{heading}</h3>
 
           <form className="space-y-6" onSubmit={handleSubmit} aria-live="polite">
             {formFields.map((field, idx) => {
