@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import AboutHero from '../components/aboutpage/AboutHero';
 import WhoWeAre from '../components/aboutpage/WhoWeAre';

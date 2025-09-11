@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import PilotHero from '../components/pilotpage/PilotHero';
 import ProjectsSection from '../components/pilotpage/ProjectsSection';
