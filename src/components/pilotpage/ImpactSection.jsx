@@ -1,7 +1,7 @@
 // src/components/Impact/ImpactSection.jsx
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import StatCounter from '../StatCounter';
+// import StatCounter from '../StatCounter';
 import client from '../../lib/sanityClient';
 import useLanguage from '../../hook/useLanguage';
 
@@ -180,11 +180,12 @@ const ImpactSection = () => {
 
             // Stat tile: use StatCounter for consistent animation/formatting
             return (
-              <StatCounter
-                key={item.label ? `stat-${item.label}` : `stat-${index}`}
-                value={item.value}
-                label={item.label}
-              />
+              // <StatCounter
+              //   key={item.label ? `stat-${item.label}` : `stat-${index}`}
+              //   value={item.value}
+              //   label={item.label}
+              // />
+              <div className=""></div>
             );
           })}
         </motion.div>
