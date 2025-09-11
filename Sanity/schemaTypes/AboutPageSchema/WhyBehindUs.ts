@@ -10,14 +10,12 @@ export default defineType({
       name: "label",
       title: "Label / Intro Text",
       type: "localeString",
-      initialValue: "Community Energy Model",
       description: "Small text above the heading",
     }),
     defineField({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "The Why Behind Us",
       description: "Main heading of the section",
     }),
     defineField({

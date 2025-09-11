@@ -1,5 +1,5 @@
 // src/components/HowBehindUs/HowBehindUs.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ScrollReveal from '../utils/ScrollReveal';
 import handsFallback from '../../assets/hands.svg';
 import client from '../../lib/sanityClient';
@@ -8,7 +8,8 @@ import useLanguage from '../../hook/useLanguage';
 const GROQ_QUERY = `*[_type == "about"][0].HowBehindUs{
   introLabel,
   heading,
-  tiles[]{
+  tiles[] {
+    _key,
     title,
     description,
     special,
@@ -24,7 +25,6 @@ const fallbackTiles = [
   { key: 'innovation', title: 'Innovation', description: 'Support Energy Sharing, Blockchain-Based Shares And Live KPIs.', special: false },
 ];
 
-// Translations for English and German (du)
 const translations = {
   en: {
     introLabel: '💡 Our Values & Team',
@@ -54,12 +54,13 @@ const HowBehindUs = () => {
   const [section, setSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language] = useLanguage();
+  const [language] = useLanguage(); // e.g. 'en' or 'du'
 
   useEffect(() => {
     let mounted = true;
-
     async function fetchSection() {
+      setLoading(true);
+      setError(null);
       try {
         const data = await client.fetch(GROQ_QUERY);
         if (!mounted) return;
@@ -68,6 +69,7 @@ const HowBehindUs = () => {
         console.error('Sanity fetch error:', err);
         if (!mounted) return;
         setError(err);
+        setSection(null);
       } finally {
         if (!mounted) return;
         setLoading(false);
@@ -78,53 +80,116 @@ const HowBehindUs = () => {
     return () => { mounted = false; };
   }, []);
 
-  // simple translator with safe fallbacks to English
-  const t = (path, fallback = '') => {
+  // helper: take a Sanity locale object like { _type: 'localeString', en: 'x', du: 'y' }
+  // or { en: 'x', du: 'y' } or string, and return best match: [language] -> en -> any string
+  const getLocale = (node, lang) => {
+    if (node == null) return null;
+
+    // if node is plain string
+    if (typeof node === 'string') return node;
+
+    // if node is object with language fields
+    if (typeof node === 'object') {
+      // common shapes: { en: 'x', du: 'y' } OR { _type: 'localeText', en: 'x' }
+      if (node[lang]) return node[lang];
+      if (node.en) return node.en;
+
+      // sometimes localeText could be an array of blocks - try to extract plain text
+      if (Array.isArray(node) && node.length) {
+        // join plain strings or block children text if present
+        const joined = node
+          .map((item) => {
+            if (!item) return '';
+            if (typeof item === 'string') return item;
+            // block type: { children: [{ text: '...' }, ...] }
+            if (item.children && Array.isArray(item.children)) {
+              return item.children.map(c => c?.text || '').join('');
+            }
+            // fallback to any string-valued property
+            const vals = Object.values(item).filter(v => typeof v === 'string');
+            return vals[0] ?? '';
+          })
+          .filter(Boolean)
+          .join('\n\n');
+        if (joined) return joined;
+      }
+
+      // fallback to first string property found
+      const firstString = Object.values(node).find(v => typeof v === 'string');
+      if (firstString) return firstString;
+    }
+
+    return null;
+  };
+
+  // small shorthand to get translation fallback
+  const t = (path, defaultValue = '') => {
     try {
       const parts = path.split('.');
       let cur = translations[language] ?? translations.en;
       for (const p of parts) {
         cur = cur?.[p];
-        if (cur === undefined) return fallback;
+        if (cur === undefined) return defaultValue;
       }
-      return cur ?? fallback;
+      return cur ?? defaultValue;
     } catch {
-      return fallback;
+      return defaultValue;
     }
   };
 
-  // Section-level fields: prefer Sanity values, fallback to translations
-  const introLabel = section?.introLabel ?? t('introLabel', translations.en.introLabel);
-  const heading = section?.heading ?? t('heading', translations.en.heading);
+  const introLabel = useMemo(() => {
+    const sVal = getLocale(section?.introLabel, language);
+    return sVal ?? t('introLabel', translations.en.introLabel);
+  }, [section, language]);
 
-  // Build tiles: prefer Sanity tiles if present, otherwise fallbackTiles with translations
-  const tilesFromSanity = Array.isArray(section?.tiles) && section.tiles.length ? section.tiles : null;
+  const heading = useMemo(() => {
+    const sVal = getLocale(section?.heading, language);
+    return sVal ?? t('heading', translations.en.heading);
+  }, [section, language]);
 
-  const tiles = (tilesFromSanity ? tilesFromSanity.map((tile, idx) => {
-    // Attempt to match to a fallback key by comparing normalized titles (best-effort),
-    // otherwise use index-based fallback translation (if available).
-    const normalizedTitle = (tile.title || '').toLowerCase().replace(/\s+/g, '');
-    const matchKey = fallbackTiles.find(ft => ft.title.toLowerCase().replace(/\s+/g,'').includes(normalizedTitle))?.key;
-    const transKey = matchKey || fallbackTiles[idx]?.key;
+  const tiles = useMemo(() => {
+    const sanityTiles = Array.isArray(section?.tiles) ? section.tiles : null;
 
-    const translated = transKey ? t(`tiles.${transKey}`, {}) : {};
-    return {
-      title: tile.title ?? translated.title ?? (fallbackTiles[idx]?.title ?? ''),
-      description: tile.description ?? translated.description ?? (fallbackTiles[idx]?.description ?? ''),
-      special: !!tile.special,
-      backgroundImageUrl: tile.backgroundImageUrl ?? fallbackTiles[idx]?.backgroundImageUrl ?? handsFallback,
-      _key: tile._key ?? `${transKey ?? idx}-${idx}`,
-    };
-  }) : fallbackTiles.map((ft) => {
-    const translated = t(`tiles.${ft.key}`, {});
-    return {
-      title: translated.title ?? ft.title,
-      description: translated.description ?? ft.description,
-      special: !!ft.special,
-      backgroundImageUrl: ft.backgroundImageUrl ?? handsFallback,
-      _key: ft.key,
-    };
-  }));
+    if (!sanityTiles || sanityTiles.length === 0) {
+      // use fallbackTiles with translations
+      return fallbackTiles.map((ft) => {
+        const trans = t(`tiles.${ft.key}`, {});
+        return {
+          _key: ft.key,
+          title: trans.title ?? ft.title,
+          description: trans.description ?? ft.description,
+          special: !!ft.special,
+          backgroundImageUrl: ft.backgroundImageUrl ?? handsFallback,
+        };
+      });
+    }
+
+    // Map each sanity tile to localized tile with safe fallbacks
+    return sanityTiles.map((tile, idx) => {
+      const title = getLocale(tile?.title, language) ?? (
+        // try to match fallback by index key if available
+        fallbackTiles[idx]?.title ?? ''
+      );
+
+      const description = getLocale(tile?.description, language) ?? (
+        fallbackTiles[idx]?.description ?? ''
+      );
+
+      const backgroundImageUrl = tile?.backgroundImageUrl ?? fallbackTiles[idx]?.backgroundImageUrl ?? handsFallback;
+
+      const special = !!tile?.special;
+
+      const key = tile?._key ?? `howbehindus-${idx}`;
+
+      return {
+        _key: key,
+        title,
+        description,
+        special,
+        backgroundImageUrl,
+      };
+    });
+  }, [section, language]);
 
   return (
     <section className="py-20 px-phone md:px-tab lg:px-desktop bg-white">
@@ -149,7 +214,7 @@ const HowBehindUs = () => {
                     key={t._key ?? i}
                     className="relative min-h-[260px] md:min-h-[320px] bg-s1 text-white"
                     style={{
-                      backgroundImage: `url(${t.backgroundImageUrl ?? handsFallback})`,
+                      backgroundImage: `url(${t.backgroundImageUrl})`,
                       backgroundRepeat: 'no-repeat',
                       backgroundSize: 'cover',
                       backgroundPosition: 'left center'

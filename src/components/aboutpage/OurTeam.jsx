@@ -1,5 +1,5 @@
 // src/components/OurTeam/OurTeam.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import teamFallback from '../../assets/aboutblogs.webp';
 import client from '../../lib/sanityClient';
@@ -7,11 +7,12 @@ import useLanguage from '../../hook/useLanguage';
 
 const GROQ_QUERY = `*[_type == "about"][0].OurTeam{
   heading,
-  members[]{
+  members[] {
+    _key,
     name,
     role,
     description,
-    "imageUrl": image.asset->url
+    "imageUrl": coalesce(imageUrl, image.asset->url, image.url)
   }
 }`;
 
@@ -106,11 +107,53 @@ const translations = {
   },
 };
 
+// Small helper to pick localized string-like shapes
+const getLocale = (node, lang = 'en') => {
+  if (node == null) return null;
+
+  // unwrap common wrapper keys if present
+  if (typeof node === 'object' && !Array.isArray(node)) {
+    const wrapperKeys = ['localeText', 'localeString', 'content', 'text', 'description', 'role'];
+    for (const k of wrapperKeys) {
+      if (node[k] != null) return getLocale(node[k], lang);
+    }
+  }
+
+  if (typeof node === 'string') return node;
+
+  if (Array.isArray(node) && node.length) {
+    // portable text blocks: join children text
+    const joined = node
+      .map((blk) => {
+        if (!blk) return '';
+        if (typeof blk === 'string') return blk;
+        if (blk.children && Array.isArray(blk.children)) {
+          return blk.children.map(c => c?.text || '').join('');
+        }
+        const s = Object.values(blk).find(v => typeof v === 'string');
+        return s ?? '';
+      })
+      .filter(Boolean)
+      .join('\n\n');
+    if (joined) return joined;
+  }
+
+  if (typeof node === 'object') {
+    if (node[lang]) return node[lang];
+    if (node.en) return node.en;
+    // fallback to first string property
+    const firstString = Object.values(node).find(v => typeof v === 'string');
+    if (firstString) return firstString;
+  }
+
+  return null;
+};
+
 const OurTeam = () => {
   const [section, setSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language] = useLanguage();
+  const [language] = useLanguage(); // 'en' | 'du'
 
   useEffect(() => {
     let mounted = true;
@@ -123,18 +166,17 @@ const OurTeam = () => {
         console.error('Sanity fetch error:', err);
         if (!mounted) return;
         setError(err);
+        setSection(null);
       } finally {
         if (!mounted) return;
         setLoading(false);
       }
     }
     fetchTeam();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  // simple translator with safe fallback to English content
+  // translator with safe fallback to English content
   const t = (path, fallback = undefined) => {
     try {
       const parts = path.split('.');
@@ -149,43 +191,57 @@ const OurTeam = () => {
     }
   };
 
-  const heading = section?.heading ?? t('heading', translations.en.heading);
+  // localized heading
+  const heading = useMemo(() => {
+    const h = getLocale(section?.heading, language);
+    return h ?? t('heading', translations.en.heading);
+  }, [section, language]);
 
   // Build members: if Sanity provides members, merge them with translations/fallbacks.
   const membersFromSanity = Array.isArray(section?.members) && section.members.length ? section.members : null;
 
-  const members = membersFromSanity
-    ? membersFromSanity.map((mem, idx) => {
-        // Try to match to a fallback key by name (best-effort)
+  const members = useMemo(() => {
+    if (membersFromSanity) {
+      return membersFromSanity.map((mem, idx) => {
+        // Try to match to a fallback key by name (best-effort), otherwise use index-based fallback
         const nameNorm = (mem.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         const foundKey = fallbackMembers.find((fm) =>
           fm.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(nameNorm)
         )?.key;
 
-        // fallback to index-based fallback if matching not found
         const fallbackObj = fallbackMembers[idx] || fallbackMembers[0];
         const key = foundKey ?? fallbackObj.key;
 
-        const translated = t(`members.${key}`, {});
+        // localized fields
+        const name = mem.name ?? t(`members.${key}.name`, fallbackObj.name);
+        const role = getLocale(mem.role, language) ?? t(`members.${key}.role`, fallbackObj.role);
+        const description = getLocale(mem.description, language) ?? t(`members.${key}.description`, fallbackObj.description);
+
+        // imageUrl may be a plain string (imageUrl) per your provided output
+        const imageUrl = mem.imageUrl ?? fallbackObj.imageUrl ?? teamFallback;
 
         return {
           _key: mem._key ?? `${key}-${idx}`,
-          name: mem.name ?? translated.name ?? fallbackObj.name,
-          role: mem.role ?? translated.role ?? fallbackObj.role,
-          description: mem.description ?? translated.description ?? fallbackObj.description,
-          imageUrl: mem.imageUrl ?? fallbackObj.imageUrl ?? teamFallback,
-        };
-      })
-    : fallbackMembers.map((fm) => {
-        const translated = t(`members.${fm.key}`, {});
-        return {
-          _key: fm.key,
-          name: translated.name ?? fm.name,
-          role: translated.role ?? fm.role,
-          description: translated.description ?? fm.description,
-          imageUrl: fm.imageUrl ?? teamFallback,
+          name,
+          role,
+          description,
+          imageUrl,
         };
       });
+    }
+
+    // fallback members (localized translations)
+    return fallbackMembers.map((fm) => {
+      const translated = t(`members.${fm.key}`, {});
+      return {
+        _key: fm.key,
+        name: translated.name ?? fm.name,
+        role: translated.role ?? fm.role,
+        description: translated.description ?? fm.description,
+        imageUrl: fm.imageUrl ?? teamFallback,
+      };
+    });
+  }, [membersFromSanity, language]);
 
   // Subtle right->left variants
   const fadeSlide = {
@@ -227,7 +283,7 @@ const OurTeam = () => {
               />
               <h3 className="font-bold text-xl text-primary">{member.name}</h3>
               <p className="font-semibold text-m-primary mb-3">{member.role}</p>
-              <p className="text-sm text-dark-gray">{member.description}</p>
+              <p className="text-sm text-dark-gray whitespace-pre-line">{member.description}</p>
             </motion.div>
           ))}
         </div>
