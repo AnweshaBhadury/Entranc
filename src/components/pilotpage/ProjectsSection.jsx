@@ -23,7 +23,8 @@ const GROQ_QUERY = `*[_type == "pilot"][0].ProjectsSection{
     buttonSecondaryClass,
     readMoreUrl,
     getInvolvedUrl,
-    mapUrl
+    mapUrl,
+    iconClassName
   }
 }`;
 
@@ -88,13 +89,38 @@ const fadeSlide = {
   show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
+// map of iconType values to React components or imported assets
 const ICON_MAP = {
-  // keys should match the `iconType` values you store in Sanity
   FaWind,
   PowerBattery,
 };
 
-const safeText = (v) => (v === undefined || v === null ? '' : String(v));
+/**
+ * Returns a localized string for Sanity's locale objects.
+ * - If field is a simple string, returns it.
+ * - If field is an object with language keys (e.g. { en, du }), returns field[language] || field.en || first string value.
+ * - Otherwise returns empty string.
+ */
+const localize = (field, language) => {
+  if (field === null || field === undefined) return '';
+  if (typeof field === 'string') return field;
+  if (typeof field === 'object') {
+    // prefer explicit language key
+    if (language && Object.prototype.hasOwnProperty.call(field, language)) {
+      const val = field[language];
+      if (typeof val === 'string' && val.trim() !== '') return val;
+    }
+    // fallback to english if present
+    if (Object.prototype.hasOwnProperty.call(field, 'en') && typeof field.en === 'string') {
+      return field.en;
+    }
+    // otherwise try to find first string property
+    for (const k of Object.keys(field)) {
+      if (typeof field[k] === 'string' && field[k].trim() !== '') return field[k];
+    }
+  }
+  return '';
+};
 
 const ProjectsSection = () => {
   const [language] = useLanguage();
@@ -112,17 +138,18 @@ const ProjectsSection = () => {
     async function fetchProjects() {
       try {
         setLoading(true);
+        setError(null);
         const data = await client.fetch(GROQ_QUERY);
 
         if (!mounted) return;
 
-        // Normalize Sanity projects
+        // Normalize Sanity projects and localize strings
         const processedProjects =
           Array.isArray(data?.projects) && data.projects.length
             ? data.projects.map((p, idx) => {
                 const id = p._key ?? `sanity-${idx}`;
-                // Resolve Icon: if iconType maps to a known React component, use it.
-                // Otherwise, if iconUrl provided, pass the URL string to ProjectCard (it will render <img>).
+
+                // Resolve Icon: check iconType mapping first, otherwise fall back to iconUrl (string)
                 let Icon = null;
                 if (p.iconType && ICON_MAP[p.iconType]) {
                   Icon = ICON_MAP[p.iconType];
@@ -130,37 +157,35 @@ const ProjectsSection = () => {
 
                 return {
                   id,
-                  status: safeText(p.status) || 'COMING SOON',
-                  title: safeText(p.title) || 'Untitled Project',
-                  description: safeText(p.description) || 'Description not available.',
-                  partners: safeText(p.partners) || 'No partners listed',
+                  status: localize(p.status, language) || 'COMING SOON',
+                  title: localize(p.title, language) || 'Untitled Project',
+                  description:
+                    localize(p.description, language) || 'Description not available.',
+                  partners: localize(p.partners, language) || 'No partners listed',
+                  // ProjectCard should handle Icon being a React component or a string url
                   Icon: Icon ?? (p.iconUrl ? p.iconUrl : null),
                   iconUrl: p.iconUrl ?? null,
-                  customContainerClass: safeText(p.customContainerClass) || 'bg-white text-primary',
-                  partnerBgClass: safeText(p.partnerBgClass) || 'bg-gray-100',
+                  customContainerClass: localize(p.customContainerClass, language) || 'bg-white text-primary',
+                  partnerBgClass: localize(p.partnerBgClass, language) || 'bg-gray-100',
                   buttonPrimaryClass:
-                    safeText(p.buttonPrimaryClass) || 'bg-blue-500 text-white hover:bg-blue-600',
+                    localize(p.buttonPrimaryClass, language) || 'bg-blue-500 text-white hover:bg-blue-600',
                   buttonSecondaryClass:
-                    safeText(p.buttonSecondaryClass) ||
+                    localize(p.buttonSecondaryClass, language) ||
                     'border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white',
-                  readMoreUrl: safeText(p.readMoreUrl) || '#',
-                  getInvolvedUrl: safeText(p.getInvolvedUrl) || '#',
-                  mapUrl: safeText(p.mapUrl) || '#',
+                  readMoreUrl: p.readMoreUrl ?? '#',
+                  getInvolvedUrl: p.getInvolvedUrl ?? '#',
+                  mapUrl: p.mapUrl ?? '#',
+                  iconClassName: p.iconClassName ?? '',
                 };
               })
             : [];
 
-        // If Sanity returned fewer items than fallbacks, fill with fallback items to keep layout consistent
-        const finalProjects =
-          processedProjects.length > 0
-            ? [
-                ...processedProjects,
-                ...fallbackProjectsData.slice(Math.max(0, processedProjects.length)),
-              ]
-            : fallbackProjectsData;
+        // If Sanity returned items, use them — otherwise fall back to static data.
+        // If you want the number of cards fixed to fallback length, you can merge as before.
+        const finalProjects = processedProjects.length > 0 ? processedProjects : fallbackProjectsData;
 
         setProjectsSection({
-          heading: safeText(data?.heading) || headingFallback,
+          heading: localize(data?.heading, language) || headingFallback,
           projects: finalProjects,
         });
       } catch (err) {
@@ -178,6 +203,7 @@ const ProjectsSection = () => {
     }
 
     fetchProjects();
+
     return () => {
       mounted = false;
     };
