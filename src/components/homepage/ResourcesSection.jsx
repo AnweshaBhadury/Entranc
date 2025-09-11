@@ -189,7 +189,7 @@ const ResourcesSection = () => {
             })
           : fallback;
 
-        setSectionData({ heading: data?.heading ?? (language === "du" ? "Ressourcen & Gemeinschaft" : "Community & Resources") });
+        setSectionData({ heading: data?.heading?.[language] ?? (language === "du" ? "Ressourcen & Gemeinschaft" : "Community & Resources") });
         setCards(sanityCards);
       } catch (err) {
         console.warn("ResourcesSection fetch failed:", err);

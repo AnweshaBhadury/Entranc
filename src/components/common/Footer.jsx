@@ -1,5 +1,5 @@
 // src/components/Footer/Footer.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaInstagram, FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
@@ -50,6 +50,7 @@ const footerQuery = `
 }
 `;
 
+/* translations (unchanged) */
 const translations = {
   en: {
     poweredByLabel: 'Powered By',
@@ -76,8 +77,9 @@ const translations = {
 const Footer = ({ bgColor = 'bg-m-primary', textColor = 'text-white' }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [language] = useLanguage();
-  const t = (key) => (translations[language] && translations[language][key]) || translations.en[key];
+  const [language] = useLanguage(); // language is now available here (e.g. 'en' or 'du')
+  const lang = typeof language === 'string' ? language : 'en';
+  const t = (key) => (translations[lang] && translations[lang][key]) || translations.en[key];
 
   useEffect(() => {
     let mounted = true;
@@ -97,123 +99,165 @@ const Footer = ({ bgColor = 'bg-m-primary', textColor = 'text-white' }) => {
       });
     return () => { mounted = false; };
   }, []);
-// inside Footer.jsx
 
-const fallbackData = {
-  en: {
-    title: "EnTranC",
-    tagline: "From local land to local power...",
-    poweredBy: partnerLogosFallback.map((logo, i) => ({ logoUrl: logo, alt: `partner-${i + 1}` })),
-    coFundedBy: { text: translations.en.coFundedByDefault, logoUrl: footer4 },
-    contactEmail: "placeholderemail@entranc.com",
-    contactPhone: "+99 9999 9999",
-    navLinks: [
-      { label: "About", url: "/about" },
-      { label: "Blogs", url: "/blogs" },
-      { label: "Pilot Project", url: "/pilot-project" },
-      { label: "Contact", url: "/contact" },
-    ],
-    legalLinks: [
-      { label: "Privacy Policy", url: "#" },
-      { label: "Disclaimer", url: "#" },
-      { label: "Cookies", url: "#" },
-      { label: "Cookie Settings", url: "#" },
-    ],
-    copyright: translations.en.copyright,
-    social: { instagramUrl: "#" }
-  },
-  du: {
-    title: "EnTranC",
-    tagline: "Vom lokalen Land zur lokalen Energie...",
-    poweredBy: partnerLogosFallback.map((logo, i) => ({ logoUrl: logo, alt: `partner-${i + 1}` })),
-    coFundedBy: { text: translations.du.coFundedByDefault, logoUrl: footer4 },
-    contactEmail: "platzhalter@entranc.com",
-    contactPhone: "+49 9999 9999",
-    navLinks: [
-      { label: "Über uns", url: "/about" },
-      { label: "Blogs", url: "/blogs" },
-      { label: "Pilotprojekt", url: "/pilot-project" },
-      { label: "Kontakt", url: "/contact" },
-    ],
-    legalLinks: [
-      { label: "Datenschutz", url: "#" },
-      { label: "Haftungsausschluss", url: "#" },
-      { label: "Cookies", url: "#" },
-      { label: "Cookie-Einstellungen", url: "#" },
-    ],
-    copyright: translations.du.copyright,
-    social: { instagramUrl: "#" }
-  }
-};
-
-// Merge helper: now pick correct language set
-const mergeFooter = (fetched = {}, fallbackAll = {}, lang = 'en') => {
-  const fallback = fallbackAll[lang] ?? fallbackAll.en;
-
-  const title = fetched.title ?? fallback.title;
-  const tagline = fetched.tagline ?? fallback.tagline;
-
-  const poweredBy =
-    Array.isArray(fetched.poweredBy) && fetched.poweredBy.length
-      ? fetched.poweredBy.map((p, idx) => ({
-          logoUrl: p.logoUrl ?? fallback.poweredBy[idx]?.logoUrl ?? '',
-          alt: p.alt ?? `partner-${idx + 1}`
-        }))
-      : fallback.poweredBy;
-
-  const coFundedBy =
-    fetched.coFundedBy && (fetched.coFundedBy.logoUrl || fetched.coFundedBy.text)
-      ? {
-          text: fetched.coFundedBy.text ?? fallback.coFundedBy.text,
-          logoUrl: fetched.coFundedBy.logoUrl ?? fallback.coFundedBy.logoUrl,
-        }
-      : fallback.coFundedBy;
-
-  const contactEmail = fetched.contactEmail ?? fallback.contactEmail;
-  const contactPhone = fetched.contactPhone ?? fallback.contactPhone;
-
-  const navLinks =
-    Array.isArray(fetched.navLinks) && fetched.navLinks.length
-      ? fetched.navLinks
-      : fallback.navLinks;
-
-  const legalLinks =
-    Array.isArray(fetched.legalLinks) && fetched.legalLinks.length
-      ? fetched.legalLinks
-      : fallback.legalLinks;
-
-  const copyright = fetched.copyright ?? fallback.copyright;
-
-  let instagramUrl = fallback.social?.instagramUrl ?? '#';
-  if (fetched.social) {
-    if (typeof fetched.social === 'string') {
-      instagramUrl = fetched.social || instagramUrl;
-    } else if (Array.isArray(fetched.social)) {
-      const ig = fetched.social.find(
-        (s) => s?.platform && s.platform.toLowerCase() === 'instagram'
-      );
-      if (ig?.url) instagramUrl = ig.url;
-    } else if (typeof fetched.social === 'object') {
-      instagramUrl = fetched.social.instagramUrl ?? fetched.social.url ?? instagramUrl;
+  // fallbackData: language-specific fallbacks
+  const fallbackData = {
+    en: {
+      title: "EnTranC",
+      tagline: "From local land to local power...",
+      poweredBy: partnerLogosFallback.map((logo, i) => ({ logoUrl: logo, alt: `partner-${i + 1}` })),
+      coFundedBy: { text: translations.en.coFundedByDefault, logoUrl: footer4 },
+      contactEmail: "placeholderemail@entranc.com",
+      contactPhone: "+99 9999 9999",
+      navLinks: [
+        { label: "About", url: "/about" },
+        { label: "Blogs", url: "/blogs" },
+        { label: "Pilot Project", url: "/pilot-project" },
+        { label: "Contact", url: "/contact" },
+      ],
+      legalLinks: [
+        { label: "Privacy Policy", url: "#" },
+        { label: "Disclaimer", url: "#" },
+        { label: "Cookies", url: "#" },
+        { label: "Cookie Settings", url: "#" },
+      ],
+      copyright: translations.en.copyright,
+      social: { instagramUrl: "#" }
+    },
+    du: {
+      title: "EnTranC",
+      tagline: "Vom lokalen Land zur lokalen Energie...",
+      poweredBy: partnerLogosFallback.map((logo, i) => ({ logoUrl: logo, alt: `partner-${i + 1}` })),
+      coFundedBy: { text: translations.du.coFundedByDefault, logoUrl: footer4 },
+      contactEmail: "platzhalter@entranc.com",
+      contactPhone: "+49 9999 9999",
+      navLinks: [
+        { label: "Über uns", url: "/about" },
+        { label: "Blogs", url: "/blogs" },
+        { label: "Pilotprojekt", url: "/pilot-project" },
+        { label: "Kontakt", url: "/contact" },
+      ],
+      legalLinks: [
+        { label: "Datenschutz", url: "#" },
+        { label: "Haftungsausschluss", url: "#" },
+        { label: "Cookies", url: "#" },
+        { label: "Cookie-Einstellungen", url: "#" },
+      ],
+      copyright: translations.du.copyright,
+      social: { instagramUrl: "#" }
     }
+  };
+
+  // --- helpers to read localeString shapes or plain strings ---
+  function getLocaleString(val, langCode, defaultStr = '') {
+    if (val === null || val === undefined) return defaultStr;
+
+    // plain string
+    if (typeof val === 'string') return val;
+
+    // object like { en: 'text', du: 'text' } or other shapes
+    if (typeof val === 'object') {
+      // prefer exact language
+      if (typeof val[langCode] === 'string' && val[langCode] !== '') return val[langCode];
+      // fallback to english if present
+      if (typeof val.en === 'string' && val.en !== '') return val.en;
+      // return the first available string property
+      for (const k of Object.keys(val)) {
+        if (typeof val[k] === 'string' && val[k] !== '') return val[k];
+      }
+    }
+
+    return defaultStr;
   }
 
-  return {
-    title,
-    tagline,
-    poweredBy,
-    coFundedBy,
-    contactEmail,
-    contactPhone,
-    navLinks,
-    legalLinks,
-    copyright,
-    social: { instagramUrl },
-  };
-};
+  function normalizeLinksArray(maybeArr, fallbackArr = []) {
+    const src = Array.isArray(maybeArr) && maybeArr.length ? maybeArr : fallbackArr;
+    return src.map((item) => {
+      const label = getLocaleString(item?.label ?? item?.title ?? item?.name, lang, '');
+      const url = typeof item?.url === 'string' && item.url ? item.url : '#';
+      return { label, url, raw: item };
+    });
+  }
 
-// usage in Footer component:
-const footerData = mergeFooter(data ?? {}, fallbackData, language);
+  // Merge fetched + fallback, extracting localized fields using `lang`
+  const mergeFooter = (fetched = {}, fallbackAll = {}, langCode = 'en') => {
+    const fallback = fallbackAll[langCode] ?? fallbackAll.en;
+
+    const title = getLocaleString(fetched.title ?? fallback.title, langCode, fallback.title);
+    const tagline = getLocaleString(fetched.tagline ?? fallback.tagline, langCode, fallback.tagline);
+
+    const poweredBy =
+      Array.isArray(fetched.poweredBy) && fetched.poweredBy.length
+        ? fetched.poweredBy.map((p, idx) => ({
+            logoUrl: p.logoUrl ?? fallback.poweredBy[idx]?.logoUrl ?? '',
+            alt: p.alt ?? fallback.poweredBy[idx]?.alt ?? `partner-${idx + 1}`,
+          }))
+        : fallback.poweredBy ?? [];
+
+    const coFundedBy =
+      fetched.coFundedBy && (fetched.coFundedBy.logoUrl || fetched.coFundedBy.text)
+        ? {
+            text: getLocaleString(fetched.coFundedBy.text ?? fallback.coFundedBy.text, langCode, fallback.coFundedBy.text),
+            logoUrl: fetched.coFundedBy.logoUrl ?? fallback.coFundedBy.logoUrl,
+          }
+        : {
+            text: getLocaleString(fallback.coFundedBy.text, langCode, fallback.coFundedBy.text),
+            logoUrl: fallback.coFundedBy.logoUrl,
+          };
+
+    const contactEmail = fetched.contactEmail ?? fallback.contactEmail;
+    const contactPhone = fetched.contactPhone ?? fallback.contactPhone;
+
+    const navLinks = normalizeLinksArray(fetched.navLinks, fallback.navLinks);
+    const legalLinks = normalizeLinksArray(fetched.legalLinks, fallback.legalLinks);
+
+    const copyright =
+      typeof fetched.copyright === 'string'
+        ? fetched.copyright
+        : getLocaleString(fetched.copyright ?? fallback.copyright, langCode, fallback.copyright);
+
+    // Social handling: fetched.social expected as array of {platform, url}
+    let instagramUrl = fallback.social?.instagramUrl ?? '#';
+    const socialArr = Array.isArray(fetched.social) ? fetched.social : Array.isArray(fetched.socialLinks) ? fetched.socialLinks : null;
+    if (socialArr && socialArr.length) {
+      // normalize and try to find instagram
+      const normalized = socialArr
+        .map((s) => ({
+          platform: getLocaleString(s?.platform ?? s?.title, langCode, ''),
+          url: typeof s?.url === 'string' ? s.url : null,
+          raw: s,
+        }))
+        .filter(Boolean);
+      const ig = normalized.find((s) => {
+        if (!s) return false;
+        if (s.platform && s.platform.toLowerCase().includes('instagram')) return true;
+        if (s.url && s.url.toLowerCase().includes('instagram.com')) return true;
+        return false;
+      });
+      if (ig?.url) instagramUrl = ig.url;
+    } else if (fetched.social && typeof fetched.social === 'object') {
+      // shape like { instagramUrl: '...' } or plain object
+      instagramUrl = fetched.social.instagramUrl ?? fetched.social.url ?? instagramUrl;
+    } else if (typeof fetched.social === 'string') {
+      instagramUrl = fetched.social || instagramUrl;
+    }
+
+    return {
+      title,
+      tagline,
+      poweredBy,
+      coFundedBy,
+      contactEmail,
+      contactPhone,
+      navLinks,
+      legalLinks,
+      copyright,
+      social: { instagramUrl },
+    };
+  };
+
+  // compute footerData memoized so it changes when `data` or `language` changes
+  const footerData = useMemo(() => mergeFooter(data ?? {}, fallbackData, lang), [data, lang]);
 
   const fadeSlide = {
     hidden: { opacity: 0, x: 30 },

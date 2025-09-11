@@ -54,7 +54,7 @@ export default defineType({
             defineField({
               name: "tagColor",
               title: "Tag Color",
-              type: "localeString",
+              type: "string",
               options: {
                 list: [
                   { title: "Sky Blue background with Sky text", value: "bg-s1/20 text-s1" },

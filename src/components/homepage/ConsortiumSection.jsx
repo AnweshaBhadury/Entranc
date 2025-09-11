@@ -82,9 +82,9 @@ const ConsortiumSection = () => {
   const t = (key) => (translations[language] && translations[language][key]) || translations.en[key];
 
   // resolved values: prefer Sanity -> localized -> safe defaults
-  const heading = data?.heading ?? t("heading");
-  const description = data?.description ?? t("description");
-  const buttonText = data?.buttonText ?? t("buttonText");
+  const heading = data?.heading?.[language] ?? t("heading");
+  const description = data?.description?.[language] ?? t("description");
+  const buttonText = data?.buttonText?.[language]  ?? t("buttonText");
   const buttonLink = safeHref(data?.buttonLink ?? t("buttonLink"));
   const riveFileUrl = (data?.riveFileUrl ?? t("riveFallback")) || t("riveFallback");
 

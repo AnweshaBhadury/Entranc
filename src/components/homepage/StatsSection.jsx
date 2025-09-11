@@ -88,16 +88,16 @@ export default function StatsSection() {
             // normalize cards from Sanity
             const normalized = res.cards.map((c, idx) => ({
               id: c._key ?? `sanity-${idx}`,
-              tag: c.tag ?? c.title ?? fallback.cards[idx % fallback.cards.length]?.tag,
+              tag: c.tag?.[language]  ?? c.title?.[language]  ?? fallback.cards[idx % fallback.cards.length]?.tag,
               tagColor: c.tagColor ?? fallback.cards[idx % fallback.cards.length]?.tagColor,
               iconImage: c.iconImage ?? null,
               iconUrl: c.iconUrl ?? null,
               image: c.image ?? fallback.cards[idx % fallback.cards.length]?.image ?? null,
-              imageAlt: c.imageAlt ?? fallback.cards[idx % fallback.cards.length]?.imageAlt ?? c.title ?? "",
-              imageCaption: c.imageCaption ?? null,
-              statValue: c.statValue ?? fallback.cards[idx % fallback.cards.length]?.statValue ?? null,
+              imageAlt: c.imageAlt?.[language]  ?? fallback.cards[idx % fallback.cards.length]?.imageAlt ?? c.title ?? "",
+              imageCaption: c.imageCaption?.[language]  ?? null,
+              statValue: c.statValue?.[language] ?? fallback.cards[idx % fallback.cards.length]?.statValue ?? null,
               subText: c.subText ?? fallback.cards[idx % fallback.cards.length]?.subText ?? "",
-              ctaText: c.ctaText ?? null,
+              ctaText: c.ctaText?.[language]  ?? null,
               ctaLink: c.ctaLink ?? null,
               iconFallback: fallback.cards[idx % fallback.cards.length]?.iconFallback ?? null,
             }));
@@ -161,9 +161,9 @@ export default function StatsSection() {
   }, [loading, cards]);
 
   const bgUrl = section?.backgroundImage ? getSanityImageUrl(section.backgroundImage, { width: 1600 }) : statsImg;
-  const heading = section?.heading ?? fallback.heading;
-  const description = section?.description ?? fallback.description;
-  const buttonText = section?.buttonText ?? fallback.buttonText;
+  const heading = section?.heading?.[language] ?? fallback.heading;
+  const description = section?.description?.[language]  ?? fallback.description;
+  const buttonText = section?.buttonText?.[language]  ?? fallback.buttonText;
   const buttonLink = section?.buttonLink ?? fallback.buttonLink;
 
   return (

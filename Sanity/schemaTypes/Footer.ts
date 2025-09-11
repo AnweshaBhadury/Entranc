@@ -11,7 +11,7 @@ export default {
     {
       name: 'tagline',
       title: 'Tagline',
-      type: 'string',
+      type: 'localeString',
     },
     {
       name: 'poweredBy',
@@ -42,7 +42,7 @@ export default {
         {
           type: 'object',
           fields: [
-            { name: 'title', title: 'Title', type: 'string' },
+            { name: 'title', title: 'Title', type: 'localeString' },
             { name: 'url', title: 'URL', type: 'string' },
           ],
         },
@@ -56,7 +56,7 @@ export default {
         {
           type: 'object',
           fields: [
-            { name: 'title', title: 'Title', type: 'string' },
+            { name: 'title', title: 'Title', type: 'localeString' },
             { name: 'url', title: 'URL', type: 'string' },
           ],
         },
@@ -70,7 +70,7 @@ export default {
         {
           type: 'object',
           fields: [
-            { name: 'platform', title: 'Platform', type: 'string' },
+            { name: 'platform', title: 'Platform', type: 'localeString' },
             { name: 'url', title: 'URL', type: 'url' },
           ],
         },

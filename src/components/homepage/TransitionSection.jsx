@@ -103,13 +103,13 @@ const TransitionSection = () => {
   }, []);
 
   // Derived values with precedence: Sanity -> localized fallback -> static fallback
-  const label = data?.label ?? t('label');
-  const heading = data?.heading ?? t('heading');
-  const description = data?.description ?? t('description');
-  const ctaText = data?.ctaText ?? t('ctaText');
+  const label = data?.label?.[language] ?? t('label');
+  const heading = data?.heading?.[language] ?? t('heading');
+  const description = data?.description?.[language] ?? t('description');
+  const ctaText = data?.ctaText?.[language] ?? t('ctaText');
   const ctaLink = data?.ctaLink ?? t('ctaLink');
   const imageAlt = data?.imageAlt ?? t('imageAlt');
-  const extraText = data?.extraText ?? t('extraText');
+  const extraText = data?.extraText?.[language] ?? t('extraText');
 
   // image handling: prefer Sanity imageUrl string if present; otherwise use builder when image object is provided
   // original GROQ returns imageUrl (string) and imageLqip; but be defensive in case schemas differ
