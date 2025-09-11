@@ -1,5 +1,5 @@
 // src/components/WhoWeAre/WhoWeAre.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaLightbulb } from 'react-icons/fa';
 import client from '../../lib/sanityClient';
@@ -7,7 +7,7 @@ import useLanguage from '../../hook/useLanguage';
 
 const GROQ_QUERY = `*[_type == "about"][0].WhoWeAre{
   heading,
-  content
+  "content": paragraphs
 }`;
 
 const fallbackContent = {
@@ -21,11 +21,8 @@ const fallbackContent = {
 // Localized defaults (English + German)
 const translations = {
   en: {
-    heading: 'Who We Are',
-    content: [
-      `At EnTranC, we believe in one simple idea: the energy transition must be fast, fair, and local. We are a community-driven cooperative dedicated to bringing renewable energy projects—wind, solar and agri-PV—into the hands of citizens, landowners and municipalities in Bavaria. Founded by a group of local climate advocates, our mission is to make the energy transition tangible and inclusive. By connecting people with purpose, capital with impact and technology with trust, EnTranC helps create energy communities that everyone can own.`,
-      `This mission emphasises fairness, local ownership and democratic participation, which are hallmarks of cooperatives.`
-    ]
+    heading: fallbackContent.heading,
+    content: fallbackContent.content,
   },
   du: {
     heading: 'Wer wir sind',
@@ -40,43 +37,77 @@ const WhoWeAre = () => {
   const [section, setSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language] = useLanguage();
+  const [language] = useLanguage(); // assume returns e.g. 'en' or 'du'
 
   useEffect(() => {
     let mounted = true;
+
     async function fetchSection() {
+      setLoading(true);
+      setError(null);
       try {
         const data = await client.fetch(GROQ_QUERY);
         if (!mounted) return;
+        // data may be null or an object
         setSection(data || null);
       } catch (err) {
-        console.error('Sanity fetch error:', err);
         if (!mounted) return;
         setError(err);
+        setSection(null);
+        // don't throw — we fallback in render
+        // optional: console.error('Sanity fetch error:', err);
       } finally {
         if (!mounted) return;
         setLoading(false);
       }
     }
+
     fetchSection();
     return () => { mounted = false; };
   }, []);
 
   // translator with safe fallback to English translations/fallbackContent
-  const t = (key, fallback) => {
-    try {
-      const cur = translations[language] ?? translations.en;
-      return cur?.[key] ?? fallback;
-    } catch {
-      return fallback;
-    }
+  const t = (key) => {
+    const cur = translations[language] ?? translations.en;
+    return cur?.[key] ?? fallbackContent[key];
   };
 
-  // Prefer Sanity values when present; otherwise use localized translations, otherwise global fallback.
-  const heading = section?.heading ?? t('heading', fallbackContent.heading);
-  const content = Array.isArray(section?.content) && section.content.length
-    ? section.content
-    : t('content', fallbackContent.content);
+  // derive localized heading and content from Sanity data when present,
+  // otherwise use translations / fallback
+  const heading = useMemo(() => {
+    // sanity heading shape: { _type: 'localeString', en: '...', du: '...' }
+    if (section?.heading && typeof section.heading === 'object') {
+      return section.heading[language] ?? section.heading.en ?? t('heading');
+    }
+    return t('heading');
+  }, [section, language]);
+
+  const content = useMemo(() => {
+    // sanity content shape example:
+    // content: [
+    //   { _key: '...', _type: 'localeText', en: '...', du: '...' },
+    //   ...
+    // ]
+    if (Array.isArray(section?.content) && section.content.length) {
+      // map each localeText to the chosen language, fallback to 'en' if missing
+      const mapped = section.content
+        .map((item) => {
+          if (!item) return '';
+          // item might be object with language fields (en/du) OR nested object like { en: 'text' }
+          if (typeof item === 'string') return item;
+          if (typeof item === 'object') {
+            // if the locale text is nested like { en: '...', du: '...' }
+            return item[language] ?? item.en ?? '';
+          }
+          return '';
+        })
+        .filter(Boolean);
+      if (mapped.length) return mapped;
+    }
+
+    // fallback to translations if no content from Sanity
+    return t('content');
+  }, [section, language]);
 
   const fadeSlide = {
     hidden: { opacity: 0, x: 50 },
@@ -85,7 +116,7 @@ const WhoWeAre = () => {
 
   return (
     <section className="py-20 px-phone md:px-tab lg:px-desktop bg-white" id="scroll-about">
-      <div className="container mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <div className="container mx-auto grid md:grid-cols-2 gap-16 items-center relative">
         <motion.div
           initial="hidden"
           whileInView="show"

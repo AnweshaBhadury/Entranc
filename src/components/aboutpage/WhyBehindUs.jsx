@@ -1,5 +1,5 @@
 // src/components/WhyBehindUs/WhyBehindUs.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ScrollReveal from '../utils/ScrollReveal';
 import { motion } from 'framer-motion';
 import client from '../../lib/sanityClient';
@@ -8,18 +8,18 @@ import a2Fallback from '../../assets/a2.jpeg';
 import useLanguage from '../../hook/useLanguage';
 
 const GROQ_QUERY = `*[_type == "about"][0].WhyBehindUs{
-  introLabel,
+  label,
   heading,
   description,
-  images[] {
-    "url": asset->url,
-    alt
-  },
-  highlights[]
+  images[] { "url": coalesce(asset->url, url), alt },
+  "highlights": cards[] {
+    _key,
+    localeText,
+  }
 }`;
 
 const fallbackContent = {
-  introLabel: 'Community Energy Model',
+  label: 'Community Energy Model',
   heading: 'The Why Behind Us',
   description:
     `In Germany, community energy cooperatives have become a backbone of the national energy transition—with thousands of citizens owning wind, solar, and bioenergy installations. EnTranC adapts and expands this model to fit diverse European contexts—from rural villages to urban neighborhoods.`,
@@ -40,25 +40,14 @@ const fallbackContent = {
 // Localized defaults (English + German)
 const translations = {
   en: {
-    introLabel: 'Community Energy Model',
-    heading: 'The Why Behind Us',
-    description:
-      `In Germany, community energy cooperatives have become a backbone of the national energy transition—with thousands of citizens owning wind, solar, and bioenergy installations. EnTranC adapts and expands this model to fit diverse European contexts—from rural villages to urban neighborhoods.`,
-    images: [
-      { url: a1Fallback, alt: 'Solar Panels and Wind Turbine' },
-      { url: a2Fallback, alt: 'Green Energy Concept' }
-    ],
-    highlights: [
-      'EnTranC is a registered cooperative where each member owns part of the project and has a democratic voice—one member, one vote.',
-      'Minimum investment: €250',
-      'Democratic governance: 1 share = 1 vote',
-      'Returns from real projects in your region',
-      'Community decision-making and annual reporting',
-      'EU Goal: 1 Renewable Energy Community per 10,000 citizens by 2025'
-    ]
+    label: fallbackContent.label,
+    heading: fallbackContent.heading,
+    description: fallbackContent.description,
+    images: fallbackContent.images,
+    highlights: fallbackContent.highlights,
   },
   du: {
-    introLabel: 'Modell der Energiegemeinschaft',
+    label: 'Modell der Energiegemeinschaft',
     heading: 'Das Warum Hinter Uns',
     description:
       `In Deutschland sind Energiegemeinschaften zu einer Säule der nationalen Energiewende geworden – mit tausenden Bürger:innen, die Wind-, Solar- und Bioenergieanlagen besitzen. EnTranC passt dieses Modell an und erweitert es für verschiedene europäische Kontexte – vom ländlichen Dorf bis zur städtischen Nachbarschaft.`,
@@ -77,15 +66,60 @@ const translations = {
   }
 };
 
+// getLocale: extract best text for lang from many Sanity shapes
+const getLocale = (node, lang) => {
+  if (node == null) return null;
+
+  // unwrap common wrapper keys (e.g. { localeText: {...} })
+  if (typeof node === 'object' && !Array.isArray(node)) {
+    const wrapperKeys = ['localeText', 'localeString', 'label', 'title', 'text', 'content', 'description'];
+    for (const k of wrapperKeys) {
+      if (node[k] != null) return getLocale(node[k], lang);
+    }
+  }
+
+  if (typeof node === 'string') return node;
+
+  if (Array.isArray(node) && node.length) {
+    // portable text blocks: gather children.text
+    const joined = node
+      .map((blk) => {
+        if (!blk) return '';
+        if (typeof blk === 'string') return blk;
+        if (blk.children && Array.isArray(blk.children)) {
+          return blk.children.map(c => c?.text || '').join('');
+        }
+        // fallback to first string prop in block
+        const s = Object.values(blk).find(v => typeof v === 'string');
+        return s ?? '';
+      })
+      .filter(Boolean)
+      .join('\n\n');
+    if (joined) return joined;
+  }
+
+  if (typeof node === 'object') {
+    if (node[lang]) return node[lang];
+    if (node.en) return node.en;
+    // fallback: first string-valued property
+    const firstString = Object.values(node).find(v => typeof v === 'string');
+    if (firstString) return firstString;
+  }
+
+  return null;
+};
+
 const WhyBehindUs = () => {
   const [section, setSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language] = useLanguage();
+  const [language] = useLanguage(); // 'en' | 'du'
 
   useEffect(() => {
     let mounted = true;
     async function fetchSection() {
+      setLoading(true);
+      setError(null);
       try {
         const data = await client.fetch(GROQ_QUERY);
         if (!mounted) return;
@@ -94,48 +128,126 @@ const WhyBehindUs = () => {
         console.error('Sanity fetch error:', err);
         if (!mounted) return;
         setError(err);
+        setSection(null);
       } finally {
         if (!mounted) return;
         setLoading(false);
       }
     }
     fetchSection();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  // Helper to get localized fallback for a key
-  const localized = (key, fallback) => {
-    try {
-      return (translations[language] && translations[language][key]) ?? fallback;
-    } catch {
-      return fallback;
-    }
-  };
+  const t = (key) => (translations[language] && translations[language][key]) ?? translations.en[key];
 
-  // Section-level values: prefer Sanity -> localized translations -> default fallback
-  const introLabel = section?.introLabel ?? localized('introLabel', fallbackContent.introLabel);
-  const heading = section?.heading ?? localized('heading', fallbackContent.heading);
-  const description = section?.description ?? localized('description', fallbackContent.description);
+  // label / heading / description (localized)
+  const label = useMemo(() => {
+    const l = getLocale(section?.label, language);
+    return l ?? t('label') ?? fallbackContent.label;
+  }, [section, language]);
 
-  // Images: prefer Sanity images if array present; else localized images; else global fallbackContent.images
-  const imagesFromSanity = Array.isArray(section?.images) && section.images.length ? section.images : null;
-  const localizedImages = localized('images', fallbackContent.images);
-  const images = imagesFromSanity
-    ? [
-        { url: imagesFromSanity[0]?.url ?? localizedImages[0]?.url ?? a1Fallback, alt: imagesFromSanity[0]?.alt ?? localizedImages[0]?.alt ?? 'Image 1' },
-        { url: imagesFromSanity[1]?.url ?? localizedImages[1]?.url ?? a2Fallback, alt: imagesFromSanity[1]?.alt ?? localizedImages[1]?.alt ?? 'Image 2' }
-      ]
-    : [
-        { url: localizedImages[0]?.url ?? a1Fallback, alt: localizedImages[0]?.alt ?? 'Image 1' },
-        { url: localizedImages[1]?.url ?? a2Fallback, alt: localizedImages[1]?.alt ?? 'Image 2' }
+  const heading = useMemo(() => {
+    const h = getLocale(section?.heading, language);
+    return h ?? t('heading') ?? fallbackContent.heading;
+  }, [section, language]);
+
+  const description = useMemo(() => {
+    const d = getLocale(section?.description, language);
+    return d ?? t('description') ?? fallbackContent.description;
+  }, [section, language]);
+
+  // main images (ensure at least 2)
+  const images = useMemo(() => {
+    // section.images might be array of { url, alt } (from our GROQ) or missing
+    const sanityImages = Array.isArray(section?.images) ? section.images : null;
+    const localizedImgs = t('images') ?? fallbackContent.images;
+
+    if (!sanityImages || sanityImages.length === 0) {
+      return [
+        { url: localizedImgs[0]?.url ?? a1Fallback, alt: localizedImgs[0]?.alt ?? 'Image 1' },
+        { url: localizedImgs[1]?.url ?? a2Fallback, alt: localizedImgs[1]?.alt ?? 'Image 2' }
       ];
+    }
 
-  // Highlights: prefer Sanity -> localized -> fallback
-  const highlightsFromSanity = Array.isArray(section?.highlights) && section.highlights.length ? section.highlights : null;
-  const highlightsLocalized = localized('highlights', fallbackContent.highlights);
-  const highlights = highlightsFromSanity ? highlightsFromSanity : highlightsLocalized ?? fallbackContent.highlights;
+    // normalize and filter bad entries
+    const mapped = sanityImages
+      .map((it) => {
+        const url = (it && (it.url || it.asset?.url)) ?? null;
+        const alt = (it && (it.alt ?? it.caption ?? '')) ?? '';
+        if (!url) return null;
+        return { url, alt };
+      })
+      .filter(Boolean);
+
+    // guarantee two images
+    while (mapped.length < 2) {
+      const idx = mapped.length;
+      const src = localizedImgs[idx] ?? fallbackContent.images[idx];
+      mapped.push({ url: src?.url ?? (idx === 0 ? a1Fallback : a2Fallback), alt: src?.alt ?? `Image ${idx + 1}` });
+    }
+
+    return mapped.slice(0, 2);
+  }, [section, language]);
+
+  // cards: accept either section.cards or section.highlights (some datasets return highlights as card-like objects)
+  const cards = useMemo(() => {
+    const rawFromCards = Array.isArray(section?.cards) ? section.cards : null;
+    const rawFromHighlights = Array.isArray(section?.highlights) ? section.highlights : null;
+    const raw = rawFromCards ?? rawFromHighlights ?? [];
+
+    if (!raw.length) return [];
+
+    return raw.map((c, idx) => {
+      const key = c._key ?? `card-${idx}`;
+
+      // title: prefer localeText or plain text
+      const title = getLocale(c?.localeText ?? c, language) ?? `Card ${idx + 1}`;
+      const desc = getLocale(c?.description, language) ?? '';
+
+      // images: item.images may exist, or fall back to section.images or defaults
+      const imgsRaw = Array.isArray(c?.images) && c.images.length ? c.images : Array.isArray(section?.images) && section.images.length ? section.images : [];
+      const imgs = imgsRaw
+        .map(i => {
+          const url = (i && (i.url || i.asset?.url)) ?? null;
+          const alt = (i && (i.alt ?? i.caption)) ?? title;
+          if (!url) return null;
+          return { url, alt };
+        })
+        .filter(Boolean);
+
+      // ensure at least one image
+      if (imgs.length === 0) {
+        imgs.push({ url: a1Fallback, alt: title });
+      }
+
+      return {
+        _key: key,
+        title,
+        description: desc,
+        images: imgs,
+      };
+    });
+  }, [section, language]);
+
+  // highlights: prioritize section.highlights (string or localeText), else build from cards titles, else fallback translations
+  const highlights = useMemo(() => {
+    if (Array.isArray(section?.highlights) && section.highlights.length) {
+      // map items to getLocale — handles nested {localeText: {...}} too
+      return section.highlights
+        .map(h => {
+          // sometimes highlight item is string, sometimes object with localeText
+          const resolved = getLocale(h, language) ?? (typeof h === 'string' ? h : null);
+          return resolved;
+        })
+        .filter(Boolean);
+    }
+
+    if (cards.length) {
+      return cards.map(c => c.title).filter(Boolean);
+    }
+
+    return t('highlights') ?? fallbackContent.highlights;
+  }, [section, cards, language]);
 
   return (
     <section className="py-20 px-phone md:px-tab lg:px-desktop bg-bg-offwhite overflow-hidden">
@@ -143,9 +255,9 @@ const WhyBehindUs = () => {
         {/* Heading */}
         <ScrollReveal>
           <div className="text-center max-w-4xl mx-auto space-y-4">
-            <p className="font-bold text-m-primary">{introLabel}</p>
+            <p className="font-bold text-m-primary">{label}</p>
             <h2 className="text-h2-phone md:text-h2-tab font-bold text-primary">{heading}</h2>
-            <p className="text-dark-gray leading-relaxed">{description}</p>
+            <p className="text-dark-gray leading-relaxed whitespace-pre-line">{description}</p>
           </div>
         </ScrollReveal>
 
@@ -190,6 +302,7 @@ const WhyBehindUs = () => {
           </motion.div>
         </div>
 
+  
         {loading && (
           <div className="mt-6 text-sm text-center text-gray-500">Loading...</div>
         )}

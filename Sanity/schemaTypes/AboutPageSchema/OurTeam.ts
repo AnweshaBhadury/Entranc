@@ -10,7 +10,6 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "Our Team",
       description: "Main heading of the section",
     }),
     defineField({
@@ -26,7 +25,7 @@ export default defineType({
             defineField({
               name: "name",
               title: "Name",
-              type: "localeString",
+              type: "string",
             }),
             defineField({
               name: "role",

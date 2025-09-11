@@ -10,7 +10,6 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "Who We Are",
       description: "Main heading of the section",
     }),
     defineField({

@@ -29,20 +29,19 @@ export default defineType({
       name: "scrollIndicatorText",
       title: "Scroll Indicator Text",
       type: "localeString",
-      initialValue: "Scroll",
       description: "localeText displayed next to the down arrow",
     }),
     defineField({
-      name: "scrollIconType",
-      title: "Scroll Icon",
-      type: "localeString",
+      name: 'scrollIconType',
+      title: 'Scroll Icon',
+      type: 'string',
       options: {
         list: [
-          { title: "Arrow Down", value: "arrowDown" },
+          { title: 'Arrow Down', value: 'arrowDown' },
+          { title: 'Chevron Down', value: 'chevronDown' }
         ],
-        layout: "radio",
-      },
-      initialValue: "arrowDown",
-    }),
+        layout: 'dropdown',
+      }
+    })
   ],
 });
