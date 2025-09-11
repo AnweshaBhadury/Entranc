@@ -7,6 +7,7 @@ import BlogsPage from './pages/BlogsPage';
 import ContactPage from './pages/ContactPage';
 import FloatingNav from './components/common/FloatingNav';
 import Header from './components/common/Header';
+import BlogPost from './pages/BlogPost';
 
 
 const App = () => {
@@ -23,6 +24,7 @@ const App = () => {
               <Route path="/pilot-project" element={<PilotProjectsPage />} />
               <Route path="/blogs" element={<BlogsPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/post/:id" element={<BlogPost/>} />
             </Routes>
           </main>
         </div>
