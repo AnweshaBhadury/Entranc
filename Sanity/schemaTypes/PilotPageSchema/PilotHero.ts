@@ -26,16 +26,6 @@ export default defineType({
       type: "localeString", // multilingual
       initialValue: "Scroll",
       description: "Text displayed next to the down arrow",
-    }),
-    defineField({
-      name: "scrollIconType",
-      title: "Scroll Icon",
-      type: "localeString",
-      options: {
-        list: [{ title: "Arrow Down", value: "arrowDown" }],
-        layout: "radio",
-      },
-      initialValue: "arrowDown",
-    }),
+    })
   ],
 });

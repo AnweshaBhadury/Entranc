@@ -58,6 +58,34 @@ const fadeSlide = {
   show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
+/**
+ * localize(field, language, fallback)
+ * - field can be:
+ *   - null/undefined -> return fallback
+ *   - a plain string -> return it
+ *   - an object like { _type: 'localeString', en: '...', du: '...' } -> pick language -> en -> first string
+ */
+const localize = (field, language, fallback = '') => {
+  if (field == null) return fallback;
+
+  // already a plain string
+  if (typeof field === 'string') return field;
+
+  // prefer requested language
+  if (language && typeof field[language] === 'string' && field[language].length) return field[language];
+
+  // fallback to english
+  if (typeof field.en === 'string' && field.en.length) return field.en;
+
+  // pick first available string value, ignoring keys that start with '_'
+  for (const [k, v] of Object.entries(field)) {
+    if (k.startsWith('_')) continue;
+    if (typeof v === 'string' && v.length) return v;
+  }
+
+  return fallback;
+};
+
 const ImpactSection = () => {
   const [language] = useLanguage();
   const localized = translations[language] ?? translations.en;
@@ -82,19 +110,29 @@ const ImpactSection = () => {
 
         // If Sanity returned a shape, normalize it; otherwise use fallback localized items
         const items = Array.isArray(data?.items) && data.items.length
-          ? data.items.map((item, i) => ({
-              // preserve or fallback per-field
-              type: item?.type ?? (fallback.items[i] && fallback.items[i].type) ?? 'stat',
-              titleLine1: item?.titleLine1 ?? (fallback.items[i] && fallback.items[i].titleLine1) ?? '',
-              titleLine2: item?.titleLine2 ?? (fallback.items[i] && fallback.items[i].titleLine2) ?? '',
-              value: item?.value ?? (fallback.items[i] && fallback.items[i].value) ?? '',
-              label: item?.label ?? (fallback.items[i] && fallback.items[i].label) ?? '',
-            }))
-          : fallback.items;
+          ? data.items.map((item, i) => {
+              // item.* may be localized objects or strings or null
+              const fallbackItem = fallback.items?.[i] ?? {};
+              return {
+                type: item?.type ?? fallbackItem.type ?? 'stat',
+                titleLine1: localize(item?.titleLine1, language, localize(fallbackItem.titleLine1, language, '')),
+                titleLine2: localize(item?.titleLine2, language, localize(fallbackItem.titleLine2, language, '')),
+                value: localize(item?.value, language, localize(fallbackItem.value, language, '')),
+                label: localize(item?.label, language, localize(fallbackItem.label, language, '')),
+              };
+            })
+          : // map fallback items through localize (they might be plain strings/objects)
+            (fallback.items || []).map((it) => ({
+              type: it.type ?? 'stat',
+              titleLine1: localize(it.titleLine1 ?? '', language, ''),
+              titleLine2: localize(it.titleLine2 ?? '', language, ''),
+              value: localize(it.value ?? '', language, ''),
+              label: localize(it.label ?? '', language, ''),
+            }));
 
         setImpactData({
-          introLabel: data?.introLabel ?? fallback.introLabel,
-          heading: data?.heading ?? fallback.heading,
+          introLabel: localize(data?.introLabel, language, fallback.introLabel),
+          heading: localize(data?.heading, language, fallback.heading),
           items,
         });
       } catch (err) {
@@ -105,7 +143,13 @@ const ImpactSection = () => {
         setImpactData({
           introLabel: localized.introLabel,
           heading: localized.heading,
-          items: localized.items,
+          items: localized.items.map((it) => ({
+            type: it.type ?? 'stat',
+            titleLine1: localize(it.titleLine1 ?? '', language, ''),
+            titleLine2: localize(it.titleLine2 ?? '', language, ''),
+            value: localize(it.value ?? '', language, ''),
+            label: localize(it.label ?? '', language, ''),
+          })),
         });
       } finally {
         if (!mounted) return;
@@ -164,15 +208,17 @@ const ImpactSection = () => {
           {(impactData.items || []).map((item, index) => {
             // Title / hero tile
             if (item.type === 'title') {
+              const title1 = String(item.titleLine1 || '').trim();
+              const title2 = String(item.titleLine2 || '').trim();
               return (
                 <div
-                  key={item.titleLine1 ? `title-${item.titleLine1}` : `title-${index}`}
+                  key={title1 ? `title-${title1}` : `title-${index}`}
                   className="relative bg-m-primary text-white p-8 flex items-center justify-center text-center"
                 >
                   <div className="absolute inset-0 bg-[url('/src/assets/hands.svg')] bg-center bg-contain bg-no-repeat opacity-10" aria-hidden />
                   <h3 className="relative text-3xl font-bold leading-tight">
-                    {String(item.titleLine1 || '').trim()}
-                    {item.titleLine2 ? <><br />{String(item.titleLine2 || '').trim()}</> : null}
+                    {title1}
+                    {title2 ? <><br />{title2}</> : null}
                   </h3>
                 </div>
               );
@@ -182,8 +228,8 @@ const ImpactSection = () => {
             return (
               <StatCounter
                 key={item.label ? `stat-${item.label}` : `stat-${index}`}
-                value={item.value}
-                label={item.label}
+                value={String(item.value ?? '')}
+                label={String(item.label ?? '')}
               />
             );
           })}

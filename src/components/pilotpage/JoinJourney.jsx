@@ -1,4 +1,3 @@
-// src/components/JoinJourney/JoinJourney.jsx
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import lightningPattern from '../../assets/lightning.svg';
@@ -6,16 +5,17 @@ import MailIconFallback from '../../assets/email.svg?react';
 import client from '../../lib/sanityClient';
 import useLanguage from '../../hook/useLanguage';
 
-const GROQ_QUERY = `*[_type == "pilot"][0].JoinJourney{
-  heading,
-  description,
-  emailPlaceholder,
-  buttonText
+const GROQ_QUERY = `*[_type == "JoinJourney"][0]{
+   buttonText,
+   description,
+   emailPlaceholder,
+   heading,
+   investmentInfo
 }`;
 
 const fadeSlide = {
   hidden: { opacity: 0, x: 50 },
-  show:   { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+  show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
 };
 
 const localizedFallbacks = {
@@ -27,6 +27,7 @@ const localizedFallbacks = {
     submitting: "Sending...",
     success: "Thanks — we'll be in touch!",
     invalidEmail: "Please enter a valid email address.",
+    investmentInfo: "Interested in investing or collaborating? Tell us more.",
   },
   du: {
     heading: "Begleiten Sie unsere Reise",
@@ -36,6 +37,7 @@ const localizedFallbacks = {
     submitting: "Senden…",
     success: "Danke — wir melden uns bei Ihnen!",
     invalidEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    investmentInfo: "Interessiert an Investitionen oder Zusammenarbeit? Erzählen Sie uns mehr.",
   }
 };
 
@@ -55,6 +57,7 @@ const JoinJourney = () => {
     description: t('description'),
     emailPlaceholder: t('emailPlaceholder'),
     buttonText: t('buttonText'),
+    investmentInfo: t('investmentInfo'),
   });
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -65,6 +68,15 @@ const JoinJourney = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
+  const getLocalized = (field, fallbackKey) => {
+    if (!field) return t(fallbackKey);
+    // If field is already a string, return it.
+    if (typeof field === 'string') return field;
+    // field is expected to be an object like { _type: 'localeString', en: '...', du: '...' }
+    // prefer the requested language, then 'en', then any value present, then fallback
+    return field[language] ?? field.en ?? Object.values(field).find(v => typeof v === 'string') ?? t(fallbackKey);
+  };
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -73,17 +85,20 @@ const JoinJourney = () => {
         if (!mounted) return;
         if (res) {
           setData({
-            heading: res.heading ?? t('heading'),
-            description: res.description ?? t('description'),
-            emailPlaceholder: res.emailPlaceholder ?? t('emailPlaceholder'),
-            buttonText: res.buttonText ?? t('buttonText'),
+            heading: getLocalized(res.heading, 'heading'),
+            description: getLocalized(res.description, 'description'),
+            emailPlaceholder: getLocalized(res.emailPlaceholder, 'emailPlaceholder'),
+            buttonText: getLocalized(res.buttonText, 'buttonText'),
+            investmentInfo: getLocalized(res.investmentInfo, 'investmentInfo'),
           });
         } else {
+          // use localized fallbacks
           setData({
             heading: t('heading'),
             description: t('description'),
             emailPlaceholder: t('emailPlaceholder'),
             buttonText: t('buttonText'),
+            investmentInfo: t('investmentInfo'),
           });
         }
       } catch (err) {
@@ -95,6 +110,7 @@ const JoinJourney = () => {
           description: t('description'),
           emailPlaceholder: t('emailPlaceholder'),
           buttonText: t('buttonText'),
+          investmentInfo: t('investmentInfo'),
         });
       } finally {
         if (!mounted) return;
@@ -141,8 +157,21 @@ const JoinJourney = () => {
     }
   };
 
-  if (loading && !data) {
-    return null;
+  // If you want to show a loader while fetching, replace with your loader component.
+  if (loading) {
+    return (
+      <section className="py-20 px-phone md:px-tab lg:px-desktop w-full" aria-labelledby="join-journey-heading">
+        <div className="relative w-full bg-s1 text-white rounded-3xl overflow-hidden">
+          <div className="relative z-10 grid md:grid-cols-12 gap-8 items-center p-8 md:p-16">
+            <div className="md:col-span-7 space-y-6">
+              <div className="h-10 w-3/4 bg-gray-600 rounded" />
+              <div className="h-6 w-full bg-gray-600 rounded" />
+              <div className="h-12 w-full bg-gray-600 rounded" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -169,6 +198,13 @@ const JoinJourney = () => {
             <motion.p variants={fadeSlide} className="text-lg leading-relaxed max-w-lg">
               {data.description}
             </motion.p>
+
+            {/* show investment info if present */}
+            {data.investmentInfo && (
+              <motion.p variants={fadeSlide} className="text-sm leading-relaxed max-w-lg text-blue-100">
+                {data.investmentInfo}
+              </motion.p>
+            )}
 
             <motion.form variants={fadeSlide} className="flex flex-col sm:flex-row gap-4 pt-4" onSubmit={handleSubmit} aria-describedby="join-journey-status">
               <label htmlFor="join-email" className="sr-only">Email</label>

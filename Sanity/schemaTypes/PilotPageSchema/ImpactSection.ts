@@ -10,14 +10,12 @@ export default defineType({
       title: "Intro Label",
       type: "localeString",
       description: "Text above the heading, e.g., 'Our Values & Team'",
-      initialValue: "Our Values & Team",
     }),
     defineField({
       name: "heading",
       title: "Heading",
       type: "localeString",
       description: "Main heading of the section",
-      initialValue: "The How Behind Us",
     }),
     defineField({
       name: "items",
@@ -31,15 +29,14 @@ export default defineType({
             defineField({
               name: "type",
               title: "Item Type",
-              type: "localeString",
+              type: "string",
               options: {
                 list: [
                   { title: "Title", value: "title" },
                   { title: "Stat", value: "stat" },
                 ],
-                layout: "radio",
+                layout: "dropdown",
               },
-              initialValue: "stat",
             }),
             defineField({
               name: "titleLine1",

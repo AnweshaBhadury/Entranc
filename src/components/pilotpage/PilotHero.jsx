@@ -69,9 +69,9 @@ const PilotHero = () => {
   const bgImageUrl = hero?.backgroundImageUrl ?? pilotFallback;
   const bgAlt = hero?.backgroundImageAlt ?? t('bgAlt');
 
-  const heading = hero?.heading ?? t('heading');
-  const subheading = hero?.subheading ?? t('subheading');
-  const scrollText = hero?.scrollIndicatorText ?? t('scrollText');
+  const heading = hero?.heading?.[language] ?? t('heading');
+  const subheading = hero?.subheading?.[language] ?? t('subheading');
+  const scrollText = hero?.scrollIndicatorText?.[language] ?? t('scrollText');
 
   return (
     <section
