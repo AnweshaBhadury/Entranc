@@ -94,7 +94,7 @@ const Hero = () => {
 
   return (
     <section className="h-[90vh] w-full relative flex items-center justify-center rounded-3xl overflow-hidden" role="region" aria-label="Hero">
-      <div className="absolute inset-0 bg-black/50 z-10" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/25 z-10" aria-hidden="true" />
 
       <motion.img
         src={bgImageUrl}

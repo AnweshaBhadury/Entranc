@@ -83,10 +83,10 @@ const FloatingNav = () => {
         <button
           onClick={toggleLanguage}
           aria-label="Toggle language"
-          title={language === 'en' ? 'Switch to Deutsch' : 'Switch to English'}
+          title={language === 'en' ? 'Switch to English' : 'Switch to Deutsch'}
           className="bg-s2 text-m-s2 px-5 py-2.5 rounded-lg font-semibold text-sm"
         >
-          {language === 'en' ? t('English') : t('Deutsch')}
+          {language === 'en' ? t('Deutsch') : t('English')}
         </button>
 
         {/* Menu button - hover to open menu */}
