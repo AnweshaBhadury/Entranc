@@ -120,17 +120,16 @@ const ConsortiumSection = () => {
   }, [rive]);
 
   return (
-    <section className="relative w-full py-20 px-phone md:px-tab lg:px-desktop bg-s1 rounded-3xl mb-20 overflow-hidden" aria-labelledby="consortium-heading">
+    <section className="relative w-full py-20 px-phone md:px-tab lg:px-desktop bg-[#D9EBFF] rounded-3xl mb-20 overflow-hidden" aria-labelledby="consortium-heading">
       {/* decorative lightning pattern (non-interactive) */}
       <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
-        <img src={lightningPattern} alt="" className="absolute top-10 left-0 w-72 h-32 opacity-100 " />
-        <img src={lightningPattern} alt="" className="absolute bottom-40 left-0 w-[500px] h-40 opacity-100" />
-        <img src={lightningPattern} alt="" className="absolute bottom-20 right-0 w-[496px] h-24 opacity-100 rotate-180" />
-        <img src={lightningPattern} alt="" className="absolute bottom-8 right-8 w-[240px] h-24 opacity-80 rotate-180" />
+        <img src={lightningPattern} alt="" className="absolute bottom-20 left-0 w-1/3 h-full min-w-[240px] opacity-100" />
+        <img src={lightningPattern} alt="" className="absolute bottom-0 right-20 w-full h-[40%] -rotate-90 opacity-100" />
+        <img src={lightningPattern} alt="" className="absolute top-10 right-0 w-1/3 h-full min-w-[240px] opacity-100 scale-x-[-1]" />
       </div>
 
       <div className="relative z-10 p-8 md:p-16 w-full">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-[2fr_3fr] gap-12 items-center">
           <div className="space-y-6">
             <motion.h2
               id="consortium-heading"
@@ -172,13 +171,13 @@ const ConsortiumSection = () => {
                 <a
                   href={buttonLink}
                   aria-label={buttonText}
-                  className="relative inline-flex h-12 items-center justify-center rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] px-6 font-semibold tracking-tight transition-[transform,background-color,color,border-color] duration-300 group-hover:-translate-x-12 group-hover:bg-[#FFC21A] group-hover:text-[#0e1510] group-hover:border-[#FFC21A]"
+                  className="relative inline-flex h-12 items-center justify-center rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] px-6 font-semibold tracking-tight transition-[transform,background-color,color,border-color] duration-300 group-hover:-translate-x-12 group-hover:bg-s1 group-hover:text-[#0e1510] group-hover:border-s1"
                 >
                   {loading ? "Loading..." : buttonText}
                 </a>
 
                 <span
-                  className="pointer-events-none absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-transparent text-[#0e1510] transition-all duration-300 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#FFC21A] group-hover:border-[#FFC21A]"
+                  className="pointer-events-none absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-transparent text-[#0e1510] transition-all duration-300 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-s1 group-hover:border-s1"
                   aria-hidden="true"
                 >
                   <span className="text-base leading-none">→</span>
@@ -195,12 +194,12 @@ const ConsortiumSection = () => {
 
           <div
             ref={riveContainerRef}
-            className="bg-primary-dark rounded-[2rem] lg:rounded-tr-[0rem] lg:rounded-br-[0rem] flex-1 h-full aspect-[1/1] lg:aspect-auto"
+            className="bg-primary-dark rounded-[2rem] lg:rounded-tr-[0rem] lg:rounded-br-[0rem] flex-1 h-full aspect-[1/1] lg:aspect-auto min-h-0 md:min-h-[400px] object-contain scale-100 md:scale-150"
             aria-hidden={false}
           >
             {/* Rive animation component */}
             <RiveComponent
-              className="rive-wrapper w-full flex items-center justify-center min-h-0 md:min-h-[400px] h-full"
+              className="rive-wrapper w-full flex items-center justify-center h-full "
               aria-label="Consortium animation"
             />
           </div>
