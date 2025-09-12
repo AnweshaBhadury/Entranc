@@ -1,7 +1,7 @@
 // src/components/Consortium/ConsortiumSection.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useRive } from "@rive-app/react-canvas";
+import { useRive, useStateMachineInput, EventType } from "@rive-app/react-canvas";
 import client from "../../lib/sanityClient";
 import lightningPattern from "../../assets/lightning.svg";
 import useLanguage from "../../hook/useLanguage";
@@ -79,53 +79,76 @@ const ConsortiumSection = () => {
   }, []);
 
   // localized fallbacks
-  const t = (key) => (translations[language] && translations[language][key]) || translations.en[key];
+  const t = (key) =>
+    (translations[language] && translations[language][key]) ||
+    translations.en[key];
 
   // resolved values: prefer Sanity -> localized -> safe defaults
   const heading = data?.heading?.[language] ?? t("heading");
   const description = data?.description?.[language] ?? t("description");
-  const buttonText = data?.buttonText?.[language]  ?? t("buttonText");
+  const buttonText = data?.buttonText?.[language] ?? t("buttonText");
   const buttonLink = safeHref(data?.buttonLink ?? t("buttonLink"));
   const riveFileUrl = (data?.riveFileUrl ?? t("riveFallback")) || t("riveFallback");
 
   // rive setup (dynamic src)
+  const STATE_MACHINE = "State Machine 1";
+
   const { rive, RiveComponent } = useRive({
     src: riveFileUrl,
-    autoplay: false,
+    autoplay: true,
+    stateMachines: STATE_MACHINE,
   });
 
   const riveContainerRef = useRef(null);
+  const scrollInput = useStateMachineInput(rive, STATE_MACHINE, "scroll section");
 
-  // IntersectionObserver to play rive when visible
   useEffect(() => {
-    if (!riveContainerRef.current || !rive) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          try {
-            rive.play();
-          } catch (e) {
-            // non-fatal
-            console.warn("Rive play failed:", e);
-          }
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    observer.observe(riveContainerRef.current);
-    return () => {
-      if (riveContainerRef.current) observer.unobserve(riveContainerRef.current);
+    if (!scrollInput) return;
+
+    const handleScroll = () => {
+      scrollInput.fire(1);
     };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [scrollInput]);
+
+  useEffect(() => {
+    if (!rive) return;
+    const onRiveEvent = (event) => {
+      console.log("Listener:", event.data.name,"URL:",event.data.url);
+      window.open(event.data.url, "_blank");
+    }
+    if (rive) {
+      rive.on(EventType.RiveEvent, onRiveEvent);
+    }
   }, [rive]);
 
   return (
-    <section className="relative w-full py-20 px-phone md:px-tab lg:px-desktop bg-[#D9EBFF] rounded-3xl mb-20 overflow-hidden" aria-labelledby="consortium-heading">
+    <section
+      className="relative w-full py-20 px-phone md:px-tab lg:px-desktop bg-[#D9EBFF] rounded-3xl mb-20 overflow-hidden"
+      aria-labelledby="consortium-heading"
+    >
       {/* decorative lightning pattern (non-interactive) */}
-      <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
-        <img src={lightningPattern} alt="" className="absolute bottom-20 left-0 w-1/3 h-full min-w-[240px] opacity-100" />
-        <img src={lightningPattern} alt="" className="absolute bottom-0 right-20 w-full h-[40%] -rotate-90 opacity-100" />
-        <img src={lightningPattern} alt="" className="absolute top-10 right-0 w-1/3 h-full min-w-[240px] opacity-100 scale-x-[-1]" />
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        aria-hidden="true"
+      >
+        <img
+          src={lightningPattern}
+          alt=""
+          className="absolute bottom-20 left-0 w-1/3 h-full min-w-[240px] opacity-100"
+        />
+        <img
+          src={lightningPattern}
+          alt=""
+          className="absolute bottom-0 right-20 w-full h-[40%] -rotate-90 opacity-100"
+        />
+        <img
+          src={lightningPattern}
+          alt=""
+          className="absolute top-10 right-0 w-1/3 h-full min-w-[240px] opacity-100 scale-x-[-1]"
+        />
       </div>
 
       <div className="relative z-10 p-8 md:p-16 w-full">
@@ -199,7 +222,7 @@ const ConsortiumSection = () => {
           >
             {/* Rive animation component */}
             <RiveComponent
-              className="rive-wrapper w-full flex items-center justify-center h-full "
+              className="rive-wrapper w-full flex items-center justify-center h-full"
               aria-label="Consortium animation"
             />
           </div>
