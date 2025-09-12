@@ -36,7 +36,7 @@ export default defineType({
             defineField({ name: "title", title: "Title", type: "localeString" }),
             defineField({ name: "description", title: "Description", type: "localeText" }),
             defineField({ name: "btnText", title: "Button Text", type: "localeString" }),
-
+            defineField({name: "btnLink",title: "Button Link",type: "url",description: "URL for the button (internal or external)",}),
             defineField({
               name: "containerClass",
               title: "Container Style",

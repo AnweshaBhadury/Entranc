@@ -18,10 +18,16 @@ export default defineType({
       description: "Main heading of the transition section",
     }),
     defineField({
-      name: "description",
-      title: "Description",
+      name: "mainDescription",
+      title: "Main Description",
       type: "localeText",
-      description: "Main paragraph describing the section",
+      description: "Paragraph under heading",
+    }),
+    defineField({
+      name: "imageDescription",
+      title: "Image Description",
+      type: "localeText",
+      description: "Paragraph under the image",
     }),
     defineField({
       name: "ctaText",

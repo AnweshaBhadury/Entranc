@@ -32,7 +32,7 @@ export default defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "localeText", title: "localeText", type: "localeText" }),
+            defineField({ name: "Text", title: "Text", type: "localeText" }),
           ],
         },
       ],

@@ -88,16 +88,21 @@ const ConsortiumSection = () => {
   const description = data?.description?.[language] ?? t("description");
   const buttonText = data?.buttonText?.[language] ?? t("buttonText");
   const buttonLink = safeHref(data?.buttonLink ?? t("buttonLink"));
-  const riveFileUrl = (data?.riveFileUrl ?? t("riveFallback")) || t("riveFallback");
+  const riveFileUrl = data?.riveFileUrl
+  ? `${data.riveFileUrl}?v=${Date.now()}` // cache-buster
+  : t("riveFallback");
+
 
   // rive setup (dynamic src)
   const STATE_MACHINE = "State Machine 1";
 
   const { rive, RiveComponent } = useRive({
     src: riveFileUrl,
-    autoplay: true,
-    stateMachines: STATE_MACHINE,
-  });
+    autoplay: true, // start state machine but not animation
+    stateMachines: STATE_MACHINE, // must match Rive file’s state machine name
+  },
+  { key: riveFileUrl }
+);
 
   const riveContainerRef = useRef(null);
   const scrollInput = useStateMachineInput(rive, STATE_MACHINE, "scroll section");
