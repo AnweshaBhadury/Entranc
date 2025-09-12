@@ -10,7 +10,8 @@ const GROQ_QUERY = `*[_type == "home" && defined(TransitionSection)][0]{
   "transition": TransitionSection{
     label,
     heading,
-    description,
+    mainDescription,
+    imageDescription,
     ctaText,
     ctaLink,
     "imageUrl": image.asset->url,
@@ -44,12 +45,14 @@ function getSanityImageUrl(img, { width = 1200, autoFormat = true } = {}) {
 }
 
 // Localized fallback copy
-const localized = {
+const localized = { 
   en: {
     label: 'EnTranC',
-    heading: 'Powering the\ntransition\n together.',
-    description:
+    heading: 'Powering the\ntransition\ntogether.',
+    mainDescription:
       'A citizen-led cooperative model accelerating renewable energy across Europe — in sync with the EU’s LIFE and Green Deal goals.',
+    imageDescription:
+      'This model ensures communities play an active role in shaping Europe’s renewable future.',
     ctaText: 'Read Blogs',
     ctaLink: '#',
     imageAlt: 'Illustration of a power grid in a green landscape',
@@ -60,8 +63,10 @@ const localized = {
   du: {
     label: 'EnTranC',
     heading: 'Die Energiewende\ngemeinsam\nvorantreiben.',
-    description:
+    mainDescription:
       'Ein bürgergeleitetes Genossenschaftsmodell zur Beschleunigung erneuerbarer Energieprojekte in ganz Europa – im Einklang mit LIFE und dem Green Deal der EU.',
+    imageDescription:
+      'Dieses Modell stellt sicher, dass Gemeinschaften eine aktive Rolle bei der Gestaltung der erneuerbaren Zukunft Europas spielen.',
     ctaText: 'Blogs lesen',
     ctaLink: '#',
     imageAlt: 'Illustration eines Stromnetzes in einer grünen Landschaft',
@@ -70,6 +75,7 @@ const localized = {
     loadingCta: 'Wird geladen…',
   },
 };
+
 
 const TransitionSection = () => {
   const [language] = useLanguage();
@@ -105,10 +111,11 @@ const TransitionSection = () => {
   // Derived values with precedence: Sanity -> localized fallback -> static fallback
   const label = data?.label?.[language] ?? t('label');
   const heading = data?.heading?.[language] ?? t('heading');
-  const description = data?.description?.[language] ?? t('description');
+  const mainDescription = data?.mainDescription?.[language] ?? t('description');
   const ctaText = data?.ctaText?.[language] ?? t('ctaText');
   const ctaLink = data?.ctaLink ?? t('ctaLink');
   const imageAlt = data?.imageAlt ?? t('imageAlt');
+  const imageDescription = data?.imageDescription?.[language] ?? t('description');
   const extraText = data?.extraText?.[language] ?? t('extraText');
 
   // image handling: prefer Sanity imageUrl string if present; otherwise use builder when image object is provided
@@ -164,7 +171,7 @@ const TransitionSection = () => {
               variants={fadeSlide}
               className="mt-4 text-base text-[#29411f] max-w-prose"
             >
-              {description}
+              {mainDescription}
             </motion.p>
 
             <motion.div
@@ -237,7 +244,7 @@ const TransitionSection = () => {
               variants={fadeSlide}
               className="max-w-xl"
             >
-              <p className="font-semibold leading-relaxed text-primary">{description}</p>
+              <p className="font-semibold leading-relaxed text-primary">{imageDescription}</p>
               <p className="mt-3 text-xs font-bold tracking-wider text-gray-500">{extraText}</p>
             </motion.aside>
           </div>

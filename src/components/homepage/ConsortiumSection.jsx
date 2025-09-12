@@ -79,20 +79,30 @@ const ConsortiumSection = () => {
   }, []);
 
   // localized fallbacks
-  const t = (key) => (translations[language] && translations[language][key]) || translations.en[key];
+  const t = (key) =>
+    (translations[language] && translations[language][key]) ||
+    translations.en[key];
 
   // resolved values: prefer Sanity -> localized -> safe defaults
   const heading = data?.heading?.[language] ?? t("heading");
   const description = data?.description?.[language] ?? t("description");
-  const buttonText = data?.buttonText?.[language]  ?? t("buttonText");
+  const buttonText = data?.buttonText?.[language] ?? t("buttonText");
   const buttonLink = safeHref(data?.buttonLink ?? t("buttonLink"));
-  const riveFileUrl = (data?.riveFileUrl ?? t("riveFallback")) || t("riveFallback");
+  const riveFileUrl = data?.riveFileUrl
+  ? `${data.riveFileUrl}?v=${Date.now()}` // cache-buster
+  : t("riveFallback");
+
 
   // rive setup (dynamic src)
-  const { rive, RiveComponent } = useRive({
+  const { rive, RiveComponent } = useRive(
+  {
     src: riveFileUrl,
-    autoplay: false,
-  });
+    autoplay: true, // start automatically
+    stateMachines: "State Machine 1", // 👈 must match your Rive file’s state machine name
+  },
+  { key: riveFileUrl }
+);
+
 
   const riveContainerRef = useRef(null);
 
@@ -115,17 +125,36 @@ const ConsortiumSection = () => {
     );
     observer.observe(riveContainerRef.current);
     return () => {
-      if (riveContainerRef.current) observer.unobserve(riveContainerRef.current);
+      if (riveContainerRef.current)
+        observer.unobserve(riveContainerRef.current);
     };
   }, [rive]);
 
   return (
-    <section className="relative w-full py-20 px-phone md:px-tab lg:px-desktop bg-[#D9EBFF] rounded-3xl mb-20 overflow-hidden" aria-labelledby="consortium-heading">
+    <section
+      className="relative w-full py-20 px-phone md:px-tab lg:px-desktop bg-[#D9EBFF] rounded-3xl mb-20 overflow-hidden"
+      aria-labelledby="consortium-heading"
+    >
       {/* decorative lightning pattern (non-interactive) */}
-      <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
-        <img src={lightningPattern} alt="" className="absolute bottom-20 left-0 w-1/3 h-full min-w-[240px] opacity-100" />
-        <img src={lightningPattern} alt="" className="absolute bottom-0 right-20 w-full h-[40%] -rotate-90 opacity-100" />
-        <img src={lightningPattern} alt="" className="absolute top-10 right-0 w-1/3 h-full min-w-[240px] opacity-100 scale-x-[-1]" />
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        aria-hidden="true"
+      >
+        <img
+          src={lightningPattern}
+          alt=""
+          className="absolute bottom-20 left-0 w-1/3 h-full min-w-[240px] opacity-100"
+        />
+        <img
+          src={lightningPattern}
+          alt=""
+          className="absolute bottom-0 right-20 w-full h-[40%] -rotate-90 opacity-100"
+        />
+        <img
+          src={lightningPattern}
+          alt=""
+          className="absolute top-10 right-0 w-1/3 h-full min-w-[240px] opacity-100 scale-x-[-1]"
+        />
       </div>
 
       <div className="relative z-10 p-8 md:p-16 w-full">

@@ -182,7 +182,7 @@ const ResourcesSection = () => {
                 title: c.title?.[language] ?? fallback[idx]?.title ?? "Title",
                 description: c.description?.[language] ?? fallback[idx]?.description ?? "",
                 btnText: c.btnText?.[language] ?? fallback[idx]?.btnText ?? "Learn More",
-                btnLink: c.btnLink?.[language] ?? fallback[idx]?.btnLink ?? "#",
+                btnLink: c.btnLink ?? fallback[idx]?.btnLink ?? "#",
                 containerClass: c.containerClass ?? fallback[idx]?.containerClass ?? "",
                 buttonClass: c.buttonClass ?? fallback[idx]?.buttonClass ?? "",
               };
