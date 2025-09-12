@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import ContactHero from '../components/contactpage/ContactHero';
 import ContactFormSection from '../components/contactpage/ContactFormSection';
