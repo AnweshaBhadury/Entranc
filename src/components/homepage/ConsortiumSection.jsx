@@ -1,7 +1,7 @@
 // src/components/Consortium/ConsortiumSection.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useRive } from "@rive-app/react-canvas";
+import { useRive, useStateMachineInput, EventType } from "@rive-app/react-canvas";
 import client from "../../lib/sanityClient";
 import lightningPattern from "../../assets/lightning.svg";
 import useLanguage from "../../hook/useLanguage";
@@ -94,40 +94,39 @@ const ConsortiumSection = () => {
 
 
   // rive setup (dynamic src)
-  const { rive, RiveComponent } = useRive(
-  {
+  const STATE_MACHINE = "State Machine 1";
+
+  const { rive, RiveComponent } = useRive({
     src: riveFileUrl,
-    autoplay: true, // start automatically
-    stateMachines: "State Machine 1", // 👈 must match your Rive file’s state machine name
+    autoplay: true, // start state machine but not animation
+    stateMachines: STATE_MACHINE, // must match Rive file’s state machine name
   },
   { key: riveFileUrl }
 );
 
-
   const riveContainerRef = useRef(null);
+  const scrollInput = useStateMachineInput(rive, STATE_MACHINE, "scroll section");
 
-  // IntersectionObserver to play rive when visible
   useEffect(() => {
-    if (!riveContainerRef.current || !rive) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          try {
-            rive.play();
-          } catch (e) {
-            // non-fatal
-            console.warn("Rive play failed:", e);
-          }
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    observer.observe(riveContainerRef.current);
-    return () => {
-      if (riveContainerRef.current)
-        observer.unobserve(riveContainerRef.current);
+    if (!scrollInput) return;
+
+    const handleScroll = () => {
+      scrollInput.fire(1);
     };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [scrollInput]);
+
+  useEffect(() => {
+    if (!rive) return;
+    const onRiveEvent = (event) => {
+      console.log("Listener:", event.data.name,"URL:",event.data.url);
+      window.open(event.data.url, "_blank");
+    }
+    if (rive) {
+      rive.on(EventType.RiveEvent, onRiveEvent);
+    }
   }, [rive]);
 
   return (
@@ -228,7 +227,7 @@ const ConsortiumSection = () => {
           >
             {/* Rive animation component */}
             <RiveComponent
-              className="rive-wrapper w-full flex items-center justify-center h-full "
+              className="rive-wrapper w-full flex items-center justify-center h-full"
               aria-label="Consortium animation"
             />
           </div>
