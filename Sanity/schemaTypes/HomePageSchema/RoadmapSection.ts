@@ -9,20 +9,16 @@ export default defineType({
       name: "title",
       title: "title",
       type: "localeString",
-      initialValue: "Work Package Roadmap",
     }),
     defineField({
       name: "description",
       title: "Description",
       type: "localeText",
-      initialValue:
-        "Our work is structured into focused work packages — each led by expert partners across Europe. From citizen engagement to digital tools, these packages outline the path to delivering community-led energy transformation.",
     }),
     defineField({
       name: "buttonText",
       title: "Button Text",
       type: "localeString",
-      initialValue: "Read Blogs",
     }),
     defineField({
       name: "buttonLink",
@@ -46,7 +42,6 @@ export default defineType({
               name: "containerClass",
               title: "Container Style",
               type: "string",
-              initialValue: "bg-s2 text-primary",
               options: {
                 list: [
                   { title: "Light Section (Soft Gray background, Dark Text)", value: "bg-s2 text-primary" },

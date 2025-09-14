@@ -9,20 +9,16 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "Statistics that Speaks For Itself",
     }),
     defineField({
       name: "description",
       title: "Description",
       type: "localeText",
-      initialValue:
-        "In just a few years, we’re building more than infrastructure — we’re building trust, community, and measurable climate action...",
     }),
     defineField({
       name: "buttonText",
       title: "Button Text",
       type: "localeString",
-      initialValue: "Read Blogs",
     }),
     defineField({
       name: "buttonLink",

@@ -10,7 +10,6 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "Get in Touch",
       description: "Main heading of the hero section",
     }),
     defineField({
@@ -23,7 +22,6 @@ export default defineType({
       name: "scrollIndicatorText",
       title: "Scroll Indicator Text",
       type: "localeString",
-      initialValue: "Scroll",
     }),
     defineField({
       name: "backgroundImage",

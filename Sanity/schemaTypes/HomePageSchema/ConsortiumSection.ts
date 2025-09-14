@@ -9,20 +9,16 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "Consortium",
     }),
     defineField({
       name: "description",
       title: "Description",
       type: "localeText",
-      initialValue:
-        "Powered by a diverse consortium of innovators, cooperatives, and institutions — working together for a shared energy future.",
     }),
     defineField({
       name: "buttonText",
       title: "Button Text",
       type: "localeString",
-      initialValue: "Read Blogs",
     }),
     defineField({
       name: "buttonLink",

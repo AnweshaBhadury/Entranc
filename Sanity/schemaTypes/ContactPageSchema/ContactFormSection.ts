@@ -36,7 +36,6 @@ export default defineType({
                 ],
                 layout: "dropdown",
               },
-              initialValue: "instagram",
               validation: (Rule) => Rule.required(),
             }),
             defineField({
@@ -58,7 +57,6 @@ export default defineType({
       name: "buttonText",
       title: "Submit Button Text",
       type: "localeString",
-      initialValue: "Submit",
     }),
     // ✅ Submissions array
     /*defineField({

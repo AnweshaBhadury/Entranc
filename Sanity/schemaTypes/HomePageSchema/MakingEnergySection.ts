@@ -28,7 +28,6 @@ export default defineType({
       name: "buttonText",
       title: "Button Text",
       type: "localeString",
-      initialValue: "Read Blogs",
     }),
     defineField({
       name: "cards",

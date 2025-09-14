@@ -10,7 +10,6 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString", // multilingual
-      initialValue: "Pilot Projects",
       description: "Main heading displayed in the hero section",
     }),
     defineField({
@@ -24,7 +23,6 @@ export default defineType({
       name: "scrollIndicatorText",
       title: "Scroll Indicator Text",
       type: "localeString", // multilingual
-      initialValue: "Scroll",
       description: "Text displayed next to the down arrow",
     })
   ],

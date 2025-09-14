@@ -9,7 +9,6 @@ export default defineType({
       name: "heading",
       title: "Heading",
       type: "localeString",
-      initialValue: "Community & Resources",
     }),
     defineField({
       name: "cards",
