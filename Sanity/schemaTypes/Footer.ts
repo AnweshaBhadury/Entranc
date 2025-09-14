@@ -70,7 +70,7 @@ export default {
         {
           type: 'object',
           fields: [
-            { name: 'platform', title: 'Platform', type: 'localeString' },
+            { name: 'platform', title: 'Platform', type: 'string' },
             { name: 'url', title: 'URL', type: 'url' },
           ],
         },
