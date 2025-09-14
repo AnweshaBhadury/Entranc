@@ -266,7 +266,7 @@ const Footer = ({ bgColor = 'bg-m-primary', textColor = 'text-white' }) => {
 
   return (
     <footer className="mt-10" role="contentinfo">
-      <div className={`relative ${bgColor} ${textColor} rounded-3xl mx-4 lg:mx-8 pt-20 pb-20 px-phone md:px-tab lg:px-desktop overflow-hidden`}>
+      <div className={`relative ${bgColor} ${textColor} rounded-3xl pt-20 pb-20 px-phone md:px-tab lg:px-desktop overflow-hidden`}>
         <div className="absolute inset-0 flex items-center justify-center text-white z-0 pointer-events-none">
           <LightningIcon className="w-full h-full opacity-10" aria-hidden="true" />
         </div>

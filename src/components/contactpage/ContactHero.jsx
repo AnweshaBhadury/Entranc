@@ -106,7 +106,7 @@ const ContactHero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 1 }}
-        className="absolute bottom-24 left-10 z-20"
+        className="absolute bottom-24 left-1/2 -translate-x-1/2 md:left-10 md:translate-x-0 z-20"
       >
         <a
           href="#scroll-contact"

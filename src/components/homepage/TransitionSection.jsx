@@ -174,49 +174,7 @@ const TransitionSection = () => {
               {mainDescription}
             </motion.p>
 
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.3 }}
-              variants={fadeSlide}
-              className="inline-flex items-center group select-none relative"
-            >
-              <span
-                className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-xl border border-[#1a2a17] text-[#1a2a17] bg-white transition-all duration-300 -mr-px group-hover:opacity-0 group-hover:-translate-x-2"
-                aria-hidden="true"
-              >
-                <span className="text-base leading-none">→</span>
-              </span>
 
-              <span className="relative inline-block h-12">
-                {hasCta ? (
-                  <a
-                    href={ctaLink}
-                    target={isExternal(ctaLink) ? '_blank' : undefined}
-                    rel={isExternal(ctaLink) ? 'noopener noreferrer' : undefined}
-                    aria-label={ctaText}
-                    className="relative inline-flex h-12 items-center justify-center rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] px-6 font-semibold tracking-tight transition-[transform,background-color,color,border-color] duration-300 group-hover:-translate-x-12 group-hover:bg-[#FFC21A] group-hover:text-[#0e1510] group-hover:border-[#FFC21A]"
-                  >
-                    <span>{loading ? t('loadingCta') : ctaText}</span>
-                  </a>
-                ) : (
-                  <button
-                    aria-label={ctaText}
-                    disabled
-                    className="relative inline-flex h-12 items-center justify-center rounded-xl border border-[#1a2a17] bg-white text-[#1a2a17] opacity-70 px-6 font-semibold tracking-tight cursor-not-allowed select-none"
-                  >
-                    <span>{loading ? t('loadingCta') : ctaText}</span>
-                  </button>
-                )}
-
-                <span
-                  className="pointer-events-none absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-transparent text-[#0e1510] transition-all duration-300 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#FFC21A] group-hover:border-[#FFC21A]"
-                  aria-hidden="true"
-                >
-                  <span className="text-base leading-none">→</span>
-                </span>
-              </span>
-            </motion.div>
           </div>
 
           <div className="space-y-6">

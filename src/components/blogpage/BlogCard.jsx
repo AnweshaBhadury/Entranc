@@ -25,7 +25,6 @@ const BlogCard = ({ post = {}, isHighlight = false, index = 0 }) => {
   const [language] = useLanguage();
   const t = (key) => (translations[language] && translations[language][key]) || translations.en[key];
 
-  // Safe field fallbacks
   const id = post.id ?? post._id ?? '';
   const title = post.title ?? t('untitled');
   const image = post.image ?? blogFallback;
@@ -33,10 +32,8 @@ const BlogCard = ({ post = {}, isHighlight = false, index = 0 }) => {
   const author = post.author ?? 'EnTranC';
   const category = post.category ?? '';
   const date = post.date ?? '';
-  // If you store ISO date in post.dateISO, prefer that for machine-readable datetime
   const dateTime = post.dateISO ?? post.date ?? '';
 
-  // ✅ first card from left, second from right, alternate thereafter
   const isEven = index % 2 === 0;
   const initial = { opacity: 0, x: isEven ? -100 : 100 };
   const animate = { opacity: 1, x: 0 };
@@ -58,11 +55,11 @@ const BlogCard = ({ post = {}, isHighlight = false, index = 0 }) => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 p-8 text-white w-full">
-            <div className="bg-white/20 backdrop-blur-md p-6 rounded-2xl border border-white/30">
-              <h3 className="font-bold text-3xl mb-2">{title}</h3>
+          <div className="absolute bottom-0 left-0 p-4 md:p-8 text-white w-full">
+            <div className="bg-white/20 backdrop-blur-md p-4 md:p-6 rounded-2xl border border-white/30">
+              <h3 className="font-bold text-2xl md:text-3xl mb-2">{title}</h3>
               <p className="text-white/90 text-sm mb-4">{excerpt}</p>
-              <div className="flex items-center justify-between text-xs mt-4">
+              <div className="flex flex-wrap items-center justify-between text-xs mt-4 gap-y-2">
                 <div className="flex items-center gap-2">
                   <FaUserCircle className="text-2xl" />
                   <span>{author}</span>
@@ -73,7 +70,6 @@ const BlogCard = ({ post = {}, isHighlight = false, index = 0 }) => {
                 <time dateTime={dateTime}>{date}</time>
               </div>
 
-              {/* Read Blog button as real Link for accessibility */}
               <div className="mt-6 text-center">
                 <Link
                   to={`/post/${id}`}
@@ -106,8 +102,8 @@ const BlogCard = ({ post = {}, isHighlight = false, index = 0 }) => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <div className="p-6 flex-grow flex flex-col">
-          <h3 className="font-extrabold text-2xl text-primary leading-tight mb-2">{title}</h3>
+        <div className="p-4 md:p-6 flex-grow flex flex-col">
+          <h3 className="font-extrabold text-xl md:text-2xl text-primary leading-tight mb-2">{title}</h3>
           <p className="text-sm text-gray-400 mb-3">
             <time dateTime={dateTime}>{date}</time>
           </p>
@@ -125,7 +121,6 @@ const BlogCard = ({ post = {}, isHighlight = false, index = 0 }) => {
               </span>
             )}
 
-            {/* Read Blog button as real Link */}
             <Link
               to={`/post/${id}`}
               className="inline-block bg-primary text-white font-semibold py-2 px-6 rounded-full hover:bg-m-primary transition-colors"
