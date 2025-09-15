@@ -146,6 +146,7 @@ const FloatingNav = () => {
                   <motion.div key={item.name} variants={mobileItemVariants}>
                     <NavLink
                       to={item.path}
+                      onClick={() => setIsOpen(false)}   
                       className={({ isActive }) =>
                         `block w-full text-center px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${isActive ? 'bg-primary text-white' : 'bg-gray-200 text-primary'
                         }`
