@@ -7,20 +7,12 @@ import { schemaTypes } from "./schemaTypes";
 export default defineConfig({
   name: "default",
   title: "EntranC",
-  projectId: "kn8ctvrb",
-  dataset: "production",
+  projectId:  process.env.SANITY_STUDIO_PROJECT_ID!,
+  dataset: process.env.SANITY_STUDIO_DATASET!,
 
   plugins: [
     structureTool(),
-    visionTool(),
-    internationalizedArray({
-      languages: [
-        { id: "en", title: "English" },
-        { id: "de", title: "Deutsch" },
-      ],
-      defaultLanguages: ["en"], // ✅ keep plural
-      fieldTypes: ["string", "text"], // auto converts these fields to multilingual arrays
-    }),
+    visionTool()
   ],
 
   schema: {
