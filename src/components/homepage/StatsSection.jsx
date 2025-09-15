@@ -174,13 +174,13 @@ export default function StatsSection() {
           <div className="absolute inset-0 bg-primary/40" />
         </div>
 
-        <div className="relative z-10 h-full grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-16">
-          <div className="text-white space-y-6 flex flex-col justify-center">
-            <motion.h2 variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="text-5xl md:text-7xl font-extrabold leading-tight">
+        <div className="relative z-10 h-full grid grid-cols-1 grid-rows-[1fr_1fr] md:grid-cols-2 md:grid-rows-1 gap-6 p-5 md:p-10">
+          <div className="text-white space-y-4 md:space-y-6 flex flex-col justify-center">
+            <motion.h2 variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
               {heading}
             </motion.h2>
 
-            <motion.p variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="text-xl md:text-2xl max-w-3xl">
+            <motion.p variants={fadeSlide} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.35 }} className="text-lg sm:text-xl md:text-2xl max-w-3xl">
               {description}
             </motion.p>
 
